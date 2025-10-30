@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { toast } from 'sonner'; // Using sonner
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { toast } from "sonner";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -15,28 +15,31 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-// 1. 'useToast' import is REMOVED
-import { trpc } from '@/trpc/client';
-import { createPostSchema } from '../../../../../../packages/api/src/validation';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { trpc } from "@/trpc/client";
+import { createPostSchema } from "../../../../../../packages/api/src/validation";
 
 type CreatePostForm = z.infer<typeof createPostSchema>;
 
 export default function CreatePostPage() {
   const router = useRouter();
+  const utils = trpc.useUtils();
+
+  const categoriesQuery = trpc.category.all.useQuery();
 
   const createPost = trpc.post.create.useMutation({
     onSuccess: () => {
-      toast.success('Post created!', {
-        description: 'Your new post has been successfully created.',
+      toast.success("Post created!", {
+        description: "Your new post has been successfully created.",
       });
-      trpc.useUtils().post.all.invalidate();
-      router.push('/');
+      utils.post.all.invalidate();
+      router.push("/");
     },
     onError: (error) => {
-      toast.error('Error creating post', {
+      toast.error("Error creating post", {
         description: error.message,
       });
     },
@@ -45,26 +48,26 @@ export default function CreatePostPage() {
   const form = useForm<CreatePostForm>({
     resolver: zodResolver(createPostSchema),
     defaultValues: {
-      title: '',
-      slug: '',
-      content: '',
+      title: "",
+      slug: "",
+      content: "",
+      categoryIds: [],
     },
   });
 
   function onSubmit(values: CreatePostForm) {
-    // 2. Use 'isPending' to check mutation state
     if (createPost.isPending) return;
     createPost.mutate(values);
   }
 
   const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
-    form.setValue('title', title);
+    form.setValue("title", title);
     const slug = title
       .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-    form.setValue('slug', slug);
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+    form.setValue("slug", slug);
   };
 
   return (
@@ -125,9 +128,63 @@ export default function CreatePostPage() {
               </FormItem>
             )}
           />
-          {/* 3. Changed 'isLoading' to 'isPending' */}
+          <FormField
+            control={form.control}
+            name="categoryIds"
+            render={() => (
+              <FormItem>
+                <div className="mb-4">
+                  <FormLabel className="text-base">Categories</FormLabel>
+                  <FormDescription>
+                    Select one or more categories for your post.
+                  </FormDescription>
+                </div>
+                <div className="space-y-2">
+                  {categoriesQuery.isLoading && <p>Loading categories...</p>}
+                  {categoriesQuery.data?.map((category) => (
+                    <FormField
+                      key={category.id}
+                      control={form.control}
+                      name="categoryIds"
+                      render={({ field }) => {
+                        return (
+                          <FormItem
+                            key={category.id}
+                            className="flex flex-row items-start space-x-3 space-y-0"
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(category.id)}
+                                onCheckedChange={(checked) => {
+                                  // Update the array of selected IDs
+                                  return checked
+                                    ? field.onChange([
+                                        ...field.value,
+                                        category.id,
+                                      ])
+                                    : field.onChange(
+                                        field.value?.filter(
+                                          (id) => id !== category.id
+                                        )
+                                      );
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              {category.name}
+                            </FormLabel>
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <Button type="submit" disabled={createPost.isPending}>
-            {createPost.isPending ? 'Creating...' : 'Create Post'}
+            {createPost.isPending ? "Creating..." : "Create Post"}
           </Button>
         </form>
       </Form>

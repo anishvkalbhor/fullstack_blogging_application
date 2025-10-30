@@ -4,6 +4,7 @@ export const createPostSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters long"),
     content: z.string().optional(),
     slug: z.string().min(3, "Slug must be at least 3 characters long").regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens"),
+    categoryIds: z.array(z.number()).min(1, "Please select at least one category."),
 });
 
 export const createCategorySchema = z.object({
