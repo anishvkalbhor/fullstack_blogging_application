@@ -1,17 +1,16 @@
-import { z } from 'zod';
-import { createTRPCRouter, publicProcedure } from '../trpc';
+import { z } from "zod";
+import { createTRPCRouter, publicProcedure } from "../trpc";
 // 1. FIX: Use the 'db/schema' package alias
-import { posts, postToCategories, categories } from '../../../db/src/schema';
-import { createPostSchema } from '../validation';
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { posts, postToCategories, categories } from "../../../db/src/schema";
+import { createPostSchema } from "../validation";
+import { eq, and, desc, inArray } from "drizzle-orm";
+import { text } from "stream/consumers";
 
 export const postRouter = createTRPCRouter({
   // --- CREATE POST ---
   create: publicProcedure
     .input(createPostSchema)
     .mutation(async ({ ctx, input }) => {
-      // 2. FIX: Destructuring was backward.
-      // The schema property is 'categoryIds', not 'categories'.
       const { categoryIds, ...postInput } = input;
 
       return ctx.db.transaction(async (tx) => {
@@ -34,10 +33,7 @@ export const postRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { categorySlug } = input;
 
-      // 3. FIX: Build 'where' conditions first, then 'orderBy' at the end.
-      // You cannot call .where() after .orderBy().
-
-      // Start with our base condition
+      // Initialize conditions array with the published condition
       const conditions = [eq(posts.published, true)];
 
       // Conditionally add the category filter
@@ -53,7 +49,10 @@ export const postRouter = createTRPCRouter({
           },
         });
 
-        if (!selectedCategory || selectedCategory.postToCategories.length === 0) {
+        if (
+          !selectedCategory ||
+          selectedCategory.postToCategories.length === 0
+        ) {
           return []; // No category found or category has no posts
         }
 
@@ -75,7 +74,7 @@ export const postRouter = createTRPCRouter({
       const allRelations = await ctx.db.query.postToCategories.findMany({
         where: inArray(
           postToCategories.postId,
-          allPosts.map((p) => p.id),
+          allPosts.map((p) => p.id)
         ),
         with: {
           category: true,
@@ -111,10 +110,68 @@ export const postRouter = createTRPCRouter({
       });
 
       if (!post) {
-        throw new Error('Post not found');
+        throw new Error("Post not found");
       }
 
       return post;
+    }),
+
+  getById: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const post = await ctx.db.query.posts.findFirst({
+        where: eq(posts.id, input.id),
+      });
+
+      if (!post) {
+        throw new Error("Post not found");
+      }
+
+      const relations = await ctx.db.query.postToCategories.findMany({
+        where: eq(postToCategories.postId, input.id),
+        columns: {
+          categoryId: true,
+        },
+      });
+
+      return {
+        ...post,
+        categoryIds: relations.map((r) => r.categoryId),
+      };
+    }),
+
+  update: publicProcedure
+    .input(
+      createPostSchema.extend({
+        id: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, categoryIds, ...postInput } = input;
+
+      return ctx.db.transaction(async (tx) => {
+        // 1. Update the post itself
+        const updatedPost = await tx
+          .update(posts)
+          .set({ ...postInput, updatedAt: new Date() })
+          .where(eq(posts.id, id))
+          .returning();
+
+        // 2. Delete all existing category relationships for this post
+        await tx
+          .delete(postToCategories)
+          .where(eq(postToCategories.postId, id));
+
+        // 3. Insert the new category relationships
+        if (categoryIds && categoryIds.length > 0) {
+          const newRelations = categoryIds.map((catId) => ({
+            postId: id,
+            categoryId: catId,
+          }));
+          await tx.insert(postToCategories).values(newRelations);
+        }
+        return updatedPost[0];
+      });
     }),
 
   // --- DELETE POST ---
@@ -139,7 +196,7 @@ export const postRouter = createTRPCRouter({
       z.object({
         id: z.number(),
         published: z.boolean(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const updatedPost = await ctx.db
