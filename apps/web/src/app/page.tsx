@@ -24,6 +24,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
         <h1 className="text-4xl font-bold">Recent Blog Posts</h1>
         <div className="flex flex-wrap gap-2">
+          <Button asChild variant="default">
+            <Link href="/dashboard">Dashboard</Link>
+          </Button>
           <Button asChild variant="outline">
             <Link href="/categories">Manage Categories</Link>
           </Button>
