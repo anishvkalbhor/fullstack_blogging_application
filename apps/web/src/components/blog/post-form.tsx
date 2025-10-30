@@ -19,8 +19,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { trpc } from '@/trpc/client';
-import { createPostSchema } from '../../../../../packages/api/src/validation'; 
-import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'; 
+import { createPostSchema } from '../../../../../packages/api/src/validation';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 
 // Define the form type from the schema
 type PostFormValues = z.infer<typeof createPostSchema>;
@@ -93,8 +93,8 @@ export function PostForm({ categories, initialData }: PostFormProps) {
     if (isPending) return;
 
     if (isEditMode) {
-      // 3. FIX: Pass id and form values at the top level
-      updatePost.mutate({ id: initialData!.id, ...values });
+      // Pass id and the form values at top-level to match the mutation input type
+      updatePost.mutate({ ...values, id: initialData!.id });
     } else {
       createPost.mutate(values);
     }
@@ -179,7 +179,6 @@ export function PostForm({ categories, initialData }: PostFormProps) {
           )}
         />
 
-        {/* 4. THIS IS THE FIX */}
         <FormField
           control={form.control}
           name="content"
@@ -187,7 +186,6 @@ export function PostForm({ categories, initialData }: PostFormProps) {
             <FormItem>
               <FormLabel>Content</FormLabel>
               <FormControl>
-                {/* Pass the field props to your editor */}
                 <SimpleEditor
                   value={field.value ?? ''}
                   onChange={field.onChange}

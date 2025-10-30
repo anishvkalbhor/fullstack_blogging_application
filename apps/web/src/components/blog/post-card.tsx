@@ -28,9 +28,25 @@ interface PostCardProps {
 
 function readingTime(text?: string | null) {
   if (!text) return '1 min read';
-  const words = text.trim().split(/\s+/).length;
+  // Strip HTML tags before counting words
+  const cleanText = text.replace(/<[^>]*>/g, '');
+  const words = cleanText.trim().split(/\s+/).length;
   const minutes = Math.max(1, Math.round(words / 200));
   return `${minutes} min read`;
+}
+
+function stripHtmlTags(html: string): string {
+  // Remove HTML tags and decode HTML entities
+  return html
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+    .replace(/&amp;/g, '&') // Replace &amp; with &
+    .replace(/&lt;/g, '<') // Replace &lt; with <
+    .replace(/&gt;/g, '>') // Replace &gt; with >
+    .replace(/&quot;/g, '"') // Replace &quot; with "
+    .replace(/&#39;/g, "'") // Replace &#39; with '
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .trim();
 }
 
 function initials(name: string) {
@@ -50,8 +66,9 @@ export function PostCard({ post, className }: PostCardProps) {
     year: 'numeric',
   });
 
+  // Strip HTML tags from content for clean snippet
   const snippet = post.content
-    ? post.content.replace(/\s+/g, ' ').slice(0, 160).trim() + '…'
+    ? stripHtmlTags(post.content).slice(0, 160).trim() + '…'
     : 'No content available.';
 
   const imageUrl =

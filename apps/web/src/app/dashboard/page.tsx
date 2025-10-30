@@ -12,17 +12,16 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem, // 1. Import DropdownMenuItem
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeletePostButton } from '@/components/blog/delete-post-button';
 import { MoreHorizontal } from 'lucide-react';
-import { PublishSwitch } from '@/components/blog/publish-switch'; // 1. Import the switch
+import { PublishSwitch } from '@/components/blog/publish-switch';
 
-// Force this page to be dynamic so it always fetches fresh data
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  // 2. Call the new dashboard-specific procedure
   const posts = await api.post.allForDashboard();
 
   return (
@@ -55,12 +54,14 @@ export default async function DashboardPage() {
               posts.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">
-                    <Link href={`/posts/${post.slug}`} className="hover:underline">
+                    <Link
+                      href={`/posts/${post.slug}`}
+                      className="hover:underline"
+                    >
                       {post.title}
                     </Link>
                   </TableCell>
                   <TableCell>
-                    {/* 3. Use the new switch component */}
                     <PublishSwitch
                       postId={post.id}
                       initialChecked={post.published}
@@ -77,7 +78,15 @@ export default async function DashboardPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        {/* We'll add "Edit" here later */}
+                        {/* 2. ADD THIS "EDIT" LINK */}
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href={`/dashboard/posts/${post.id}/edit`}
+                          >
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        {/* The Delete button is a client component */}
                         <DeletePostButton postId={post.id} />
                       </DropdownMenuContent>
                     </DropdownMenu>
