@@ -17,78 +17,85 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { trpc } from '@/trpc/client';
-import { createPostSchema } from '../../../../../packages/api/src/validation'; // Make sure this is exported from api/validation
+import { createPostSchema } from '../../../../../packages/api/src/validation'; 
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'; 
 
-// Define the form type from our shared Zod schema
+// Define the form type from the schema
 type PostFormValues = z.infer<typeof createPostSchema>;
 
-// Define the component's props
+// Define the props for the component
 interface PostFormProps {
-  // We pass initialData to populate the form for editing
-  initialData?: PostFormValues & { id: number; slug: string };
-  // We pass the list of categories to display as checkboxes
+  // All categories, passed from a server component
   categories: { id: number; name: string }[];
+  // Optional initial data for editing a post
+  initialData?: {
+    id: number;
+    title: string;
+    slug: string;
+    content?: string;
+    authorName: string;
+    imageUrl?: string;
+    categoryIds: number[];
+  };
 }
 
-export function PostForm({ initialData, categories }: PostFormProps) {
+export function PostForm({ categories, initialData }: PostFormProps) {
   const router = useRouter();
   const utils = trpc.useUtils();
-
-  // Determine if we are in 'edit' or 'create' mode
   const isEditMode = !!initialData;
 
-  // 1. tRPC Mutations
+  const form = useForm<PostFormValues>({
+    resolver: zodResolver(createPostSchema),
+    defaultValues: {
+      title: initialData?.title ?? '',
+      slug: initialData?.slug ?? '',
+      content: initialData?.content ?? '',
+      authorName: initialData?.authorName ?? 'Admin',
+      imageUrl: initialData?.imageUrl ?? '',
+      categoryIds: initialData?.categoryIds ?? [],
+    },
+  });
+
+  // tRPC mutation for creating a post
   const createPost = trpc.post.create.useMutation({
     onSuccess: () => {
       toast.success('Post created!');
-      // Invalidate all queries to refresh data
       utils.post.all.invalidate();
       utils.post.allForDashboard.invalidate();
-      router.push('/dashboard'); // Redirect to dashboard after creation
+      router.push('/dashboard');
     },
     onError: (error) => {
       toast.error('Error creating post', { description: error.message });
     },
   });
 
+  // tRPC mutation for updating a post
   const updatePost = trpc.post.update.useMutation({
     onSuccess: (updatedPost) => {
       toast.success('Post updated!');
-      // Invalidate all queries to refresh data
       utils.post.all.invalidate();
       utils.post.allForDashboard.invalidate();
-      // Invalidate the specific post queries
       utils.post.getById.invalidate({ id: initialData?.id });
       utils.post.getBySlug.invalidate({ slug: updatedPost.slug });
-      router.push('/dashboard'); // Redirect to dashboard after update
+      router.push('/dashboard');
     },
     onError: (error) => {
       toast.error('Error updating post', { description: error.message });
     },
   });
 
-  // 2. Form Setup (react-hook-form)
-  const form = useForm<PostFormValues>({
-    resolver: zodResolver(createPostSchema),
-    // Use initialData if provided (for edit), otherwise use defaults
-    defaultValues: {
-      title: initialData?.title ?? '',
-      slug: initialData?.slug ?? '',
-      content: initialData?.content ?? '',
-      categoryIds: initialData?.categoryIds ?? [],
-    },
-  });
+  const isPending = createPost.isPending || updatePost.isPending;
 
-  // 3. Submit Handler
+  // Handle form submission
   function onSubmit(values: PostFormValues) {
+    if (isPending) return;
+
     if (isEditMode) {
-      // If editing, call update mutation
-      updatePost.mutate({ ...values, id: initialData.id });
+      // 3. FIX: Pass id and form values at the top level
+      updatePost.mutate({ id: initialData!.id, ...values });
     } else {
-      // If creating, call create mutation
       createPost.mutate(values);
     }
   }
@@ -99,17 +106,27 @@ export function PostForm({ initialData, categories }: PostFormProps) {
     form.setValue('title', title);
     const slug = title
       .toLowerCase()
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/[^a-z0-9-]/g, ''); // Remove invalid characters
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
     form.setValue('slug', slug);
   };
-
-  const isSubmitting = createPost.isPending || updatePost.isPending;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Title Field */}
+        <FormField
+          control={form.control}
+          name="authorName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Author Name</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="title"
@@ -120,7 +137,7 @@ export function PostForm({ initialData, categories }: PostFormProps) {
                 <Input
                   placeholder="My Awesome Post"
                   {...field}
-                  onChange={onTitleChange} // Use custom change handler
+                  onChange={onTitleChange}
                 />
               </FormControl>
               <FormMessage />
@@ -128,7 +145,6 @@ export function PostForm({ initialData, categories }: PostFormProps) {
           )}
         />
 
-        {/* Slug Field */}
         <FormField
           control={form.control}
           name="slug"
@@ -138,15 +154,32 @@ export function PostForm({ initialData, categories }: PostFormProps) {
               <FormControl>
                 <Input placeholder="my-awesome-post" {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="imageUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Image URL</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://example.com/image.png"
+                  {...field}
+                  value={field.value ?? ''}
+                />
+              </FormControl>
               <FormDescription>
-                This is the URL-friendly version of your title.
+                A direct link to your post's cover image.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Content Field */}
+        {/* 4. THIS IS THE FIX */}
         <FormField
           control={form.control}
           name="content"
@@ -154,10 +187,10 @@ export function PostForm({ initialData, categories }: PostFormProps) {
             <FormItem>
               <FormLabel>Content</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Write your post content here in Markdown..."
-                  className="min-h-[300px]"
-                  {...field}
+                {/* Pass the field props to your editor */}
+                <SimpleEditor
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
@@ -165,7 +198,6 @@ export function PostForm({ initialData, categories }: PostFormProps) {
           )}
         />
 
-        {/* Categories Field */}
         <FormField
           control={form.control}
           name="categoryIds"
@@ -178,36 +210,36 @@ export function PostForm({ initialData, categories }: PostFormProps) {
                 </FormDescription>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {categories.map((category) => (
+                {categories.map((item) => (
                   <FormField
-                    key={category.id}
+                    key={item.id}
                     control={form.control}
                     name="categoryIds"
                     render={({ field }) => {
                       return (
                         <FormItem
-                          key={category.id}
-                          className="flex flex-row items-center space-x-3 space-y-0"
+                          key={item.id}
+                          className="flex flex-row items-start space-x-3 space-y-0"
                         >
                           <FormControl>
                             <Checkbox
-                              checked={field.value?.includes(category.id)}
+                              checked={field.value?.includes(item.id)}
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
                                       ...(field.value ?? []),
-                                      category.id,
+                                      item.id,
                                     ])
                                   : field.onChange(
                                       field.value?.filter(
-                                        (id) => id !== category.id,
+                                        (value) => value !== item.id,
                                       ),
                                     );
                               }}
                             />
                           </FormControl>
                           <FormLabel className="font-normal">
-                            {category.name}
+                            {item.name}
                           </FormLabel>
                         </FormItem>
                       );
@@ -220,8 +252,8 @@ export function PostForm({ initialData, categories }: PostFormProps) {
           )}
         />
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
+        <Button type="submit" disabled={isPending}>
+          {isPending
             ? isEditMode
               ? 'Saving...'
               : 'Creating...'
@@ -233,4 +265,3 @@ export function PostForm({ initialData, categories }: PostFormProps) {
     </Form>
   );
 }
-

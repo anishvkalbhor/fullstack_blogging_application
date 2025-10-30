@@ -1,10 +1,17 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
-// 1. FIX: Use the 'db/schema' package alias
 import { posts, postToCategories, categories } from "../../../db/src/schema";
 import { createPostSchema } from "../validation";
-import { eq, and, desc, inArray } from "drizzle-orm";
-import { text } from "stream/consumers";
+import { eq, and, desc, inArray, or, sql, type SQL } from "drizzle-orm";
+import { PgColumn } from "drizzle-orm/pg-core";
+import { ilike } from "drizzle-orm";
+
+function coalesce<T extends PgColumn | SQL>(
+  column: T,
+  defaultValue: string | number | SQL
+): SQL {
+  return sql`coalesce(${column}, ${defaultValue})`;
+}
 
 export const postRouter = createTRPCRouter({
   // --- CREATE POST ---
@@ -29,12 +36,29 @@ export const postRouter = createTRPCRouter({
 
   // --- 1. MODIFIED `post.all` (FOR PUBLIC HOMEPAGE) ---
   all: publicProcedure
-    .input(z.object({ categorySlug: z.string().optional() }))
+    .input(
+      z.object({
+        categorySlug: z.string().optional(),
+        search: z.string().optional(),
+      })
+    )
     .query(async ({ ctx, input }) => {
-      const { categorySlug } = input;
+      const { categorySlug, search } = input;
 
       // Initialize conditions array with the published condition
       const conditions = [eq(posts.published, true)];
+
+      if (search) {
+        const query = `%${search}%`;
+        conditions.push(
+          // @ts-ignore – column might be nullable but it’s fine for this query
+          or(
+            ilike(posts.title, query),
+            ilike(sql`${posts.content}`, query),
+            ilike(sql`${posts.authorName}`, query)
+          )
+        );
+      }
 
       // Conditionally add the category filter
       if (categorySlug) {

@@ -1,13 +1,8 @@
+'use client';
+
 import Link from 'next/link';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { CalendarDays, ChevronRight, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
 type PostWithCategories = {
@@ -16,6 +11,8 @@ type PostWithCategories = {
   slug: string;
   content: string | null;
   createdAt: string;
+  authorName: string;
+  imageUrl: string | null;
   categories: {
     id: number;
     name: string;
@@ -26,52 +23,153 @@ type PostWithCategories = {
 
 interface PostCardProps {
   post: PostWithCategories;
+  className?: string;
 }
 
-export function PostCard({ post }: PostCardProps) {
-  const formattedDate = new Date(post.createdAt).toLocaleDateString('en-US', {
+function readingTime(text?: string | null) {
+  if (!text) return '1 min read';
+  const words = text.trim().split(/\s+/).length;
+  const minutes = Math.max(1, Math.round(words / 200));
+  return `${minutes} min read`;
+}
+
+function initials(name: string) {
+  return name
+    .split(' ')
+    .map((s) => s[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
+
+export function PostCard({ post, className }: PostCardProps) {
+  const date = new Date(post.createdAt);
+  const formattedDate = date.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: 'short',
     year: 'numeric',
-    month: 'long',
-    day: 'numeric',
   });
 
   const snippet = post.content
-    ? post.content.substring(0, 100) + '...'
-    : 'No content...';
+    ? post.content.replace(/\s+/g, ' ').slice(0, 160).trim() + '…'
+    : 'No content available.';
+
+  const imageUrl =
+    post.imageUrl ||
+    `https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=${encodeURIComponent(
+      post.title,
+    )}`;
 
   return (
-    <Card className="flex flex-col justify-between h-full">
-      <div>
-        <CardHeader>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {post.categories.length > 0 ? (
-              post.categories.map((category) => (
-                <Link
-                  href={`/?category=${category.slug}`}
-                  key={category.id}
-                  passHref
+    <article
+      className={cn(
+        'group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl',
+        className,
+      )}
+      aria-labelledby={`post-${post.id}-title`}
+    >
+      {/* IMAGE + TAGS */}
+      <div className="relative h-56 w-full overflow-hidden md:h-64">
+        <Link href={`/posts/${post.slug}`} aria-label={`Open ${post.title}`}>
+          <img
+            src={imageUrl}
+            alt={post.title}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            onError={(e) => {
+              e.currentTarget.src =
+                'https://placehold.co/900x600/ddd/666?text=No+Image';
+            }}
+          />
+          {/* subtle gradient overlay */}
+          <div className="absolute inset-0 bg-linear-to-t from-black/45 to-transparent opacity-90" />
+        </Link>
+
+        <div className="absolute left-4 top-4 flex flex-wrap gap-2 z-20">
+          {post.categories.length > 0 ? (
+            post.categories.slice(0, 3).map((cat) => (
+              <a
+                key={cat.id}
+                href={`/blog?category=${cat.slug}`}
+                className="group"
+                aria-label={`Filter by ${cat.name}`}
+              >
+                <Badge
+                  variant="outline"
+                  className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-gray-800 backdrop-blur-sm transition-colors group-hover:bg-white/30 dark:bg-purple-900/40 dark:text-purple-100 "
                 >
-                  <Badge variant="outline" className="cursor-pointer">
-                    {category.name}
-                  </Badge>
-                </Link>
-              ))
-            ) : (
-              <Badge variant="secondary">Uncategorized</Badge>
-            )}
-          </div>
-          <CardTitle className="text-2xl font-bold">{post.title}</CardTitle>
-          <CardDescription>{formattedDate}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">{snippet}</p>
-        </CardContent>
+                  {cat.name}
+                </Badge>
+              </a>
+            ))
+          ) : (
+            <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-xs">
+              Uncategorized
+            </Badge>
+          )}
+        </div>
       </div>
-      <CardFooter>
-        <Button asChild>
-          <Link href={`/posts/${post.slug}`}>Read More</Link>
-        </Button>
-      </CardFooter>
-    </Card>
+
+      {/* CONTENT */}
+      <div className="flex flex-1 flex-col justify-between p-5">
+        {/* meta row: avatar, author, date, reading time */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            {/* avatar (initials fallback) */}
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-white"
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(124,58,237,0.95), rgba(59,130,246,0.9))',
+              }}
+              aria-hidden
+            >
+              {initials(post.authorName || 'A')}
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-sm font-medium leading-none">{post.authorName}</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <time dateTime={date.toISOString()}>{formattedDate}</time>
+                <span aria-hidden>•</span>
+                <span>{readingTime(post.content)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* small icon for readability */}
+          <div className="hidden items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground md:flex">
+            <CalendarDays className="h-4 w-4" />
+            <span className="text-sm">{formattedDate}</span>
+          </div>
+        </div>
+
+        {/* title & excerpt */}
+        <div className="mt-4">
+          <h3
+            id={`post-${post.id}-title`}
+            className="line-clamp-2 text-lg font-semibold leading-tight transition-colors group-hover:text-purple-600"
+          >
+            {/* 2. Kept <Link> here since it goes to a different page */}
+            <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+          </h3>
+
+          <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{snippet}</p>
+        </div>
+
+        {/* footer: Read more */}
+        <div className="mt-5 flex items-center justify-between">
+          <Link
+            href={`/posts/${post.slug}`}
+            className="inline-flex items-center gap-2 rounded-lg border border-transparent bg-gradient-to-r from-purple-600 to-indigo-500 px-3 py-2 text-sm font-medium text-white shadow hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+            aria-label={`Read more about ${post.title}`}
+          >
+            Read more
+            <ChevronRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1" />
+          </Link>
+        </div>
+      </div>
+    </article>
   );
 }
+

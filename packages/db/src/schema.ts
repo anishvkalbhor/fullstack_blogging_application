@@ -22,12 +22,15 @@ export const categories = pgTable("categories", {
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 256 }).notNull(),
-  content: text("content"),
+  content: text("content").notNull().default(""),
   slug: varchar("slug", { length: 256 }).notNull().unique(),
   published: boolean('published').default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  authorName: varchar('author_name', { length: 256 }).notNull().default('Admin'),
+  imageUrl: text('image_url'),
 });
+
 
 // 3. Post-Category Relationsips (Many-to-Many Join Table)
 export const postToCategories = pgTable(
