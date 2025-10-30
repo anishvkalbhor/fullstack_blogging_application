@@ -1,54 +1,57 @@
-import Link from 'next/link';
+import { Suspense } from 'react';
 import { api } from '@/trpc/server-client';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { CategoryFilters } from '@/components/blog/category-filters';
+import { PostCard } from '@/components/blog/post-card';
 
-export default async function Home() {
-  // 1. Fetch data directly from your tRPC API
-  const posts = await api.post.all();
+export const dynamic = 'force-dynamic';
+
+interface HomePageProps {
+  searchParams: {
+    category?: string;
+  };
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams;
+  const categorySlug = params?.category;
+
+  const posts = await api.post.all({ categorySlug });
 
   return (
-    <main className="container mx-auto max-w-4xl py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-4xl font-bold">All Blog Posts</h1>
-        {/* We will make this link work soon */}
-        <Button asChild>
-          <Link href="/posts/create">Create Post</Link>
-        </Button>
+    <main className="container mx-auto py-12">
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+        <h1 className="text-4xl font-bold">Recent Blog Posts</h1>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link href="/categories">Manage Categories</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/posts/create">Create Post</Link>
+          </Button>
+        </div>
       </div>
 
-      {/* 2. Render the list of posts */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {posts.length === 0 ? (
-          <p className="text-gray-500">No posts found.</p>
-        ) : (
-          posts.map((post) => (
-            <Card key={post.id}>
-              <CardHeader>
-                <CardTitle>{post.title}</CardTitle>
-                <CardDescription>
-                  Published on: {new Date(post.createdAt).toLocaleDateString()}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-4 line-clamp-3">
-                  {post.content ?? 'No content...'}
-                </p>
-                <Button asChild variant="outline">
-                  {/* This link will go to the individual post page */}
-                  <Link href={`/posts/${post.slug}`}>Read More</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))
-        )}
+      <Suspense fallback={<div className="h-10 mb-8 w-full animate-pulse bg-muted rounded-lg" />}>
+        <CategoryFilters activeSlug={categorySlug} />
+      </Suspense>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {posts.map((post) => (
+          // @ts-expect-error Server Component type mismatch
+          <PostCard key={post.id} post={post} />
+        ))}
       </div>
+
+      {posts.length === 0 && (
+        <div className="text-center col-span-full py-12">
+          <h2 className="text-2xl font-semibold">No posts found</h2>
+          <p className="text-muted-foreground">
+            Try adjusting your filters or create a new post.
+          </p>
+        </div>
+      )}
     </main>
   );
 }
