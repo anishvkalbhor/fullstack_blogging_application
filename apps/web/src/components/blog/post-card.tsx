@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { CalendarDays, ChevronRight, User } from 'lucide-react';
+import { CalendarDays, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
@@ -80,7 +80,7 @@ export function PostCard({ post, className }: PostCardProps) {
   return (
     <article
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl',
+        'group relative flex flex-col overflow-hidden rounded-2xl bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-md',
         className,
       )}
       aria-labelledby={`post-${post.id}-title`}
@@ -92,14 +92,14 @@ export function PostCard({ post, className }: PostCardProps) {
             src={imageUrl}
             alt={post.title}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-700 ease-out"
             onError={(e) => {
               e.currentTarget.src =
                 'https://placehold.co/900x600/ddd/666?text=No+Image';
             }}
           />
           {/* subtle gradient overlay */}
-          <div className="absolute inset-0 bg-linear-to-t from-black/45 to-transparent opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent opacity-90" />
         </Link>
 
         <div className="absolute left-4 top-4 flex flex-wrap gap-2 z-20">
@@ -113,7 +113,7 @@ export function PostCard({ post, className }: PostCardProps) {
               >
                 <Badge
                   variant="outline"
-                  className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-gray-800 backdrop-blur-sm transition-colors group-hover:bg-white/30 dark:bg-purple-900/40 dark:text-purple-100 "
+                  className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-gray-800 backdrop-blur-sm transition-colors duration-200 group-hover:bg-white/30 dark:bg-purple-900/40 dark:text-purple-100"
                 >
                   {cat.name}
                 </Badge>
@@ -165,9 +165,8 @@ export function PostCard({ post, className }: PostCardProps) {
         <div className="mt-4">
           <h3
             id={`post-${post.id}-title`}
-            className="line-clamp-2 text-lg font-semibold leading-tight transition-colors group-hover:text-purple-600"
+            className="line-clamp-2 text-lg font-semibold leading-tight transition-colors duration-200 group-hover:text-purple-600"
           >
-            {/* 2. Kept <Link> here since it goes to a different page */}
             <Link href={`/posts/${post.slug}`}>{post.title}</Link>
           </h3>
 
@@ -178,15 +177,14 @@ export function PostCard({ post, className }: PostCardProps) {
         <div className="mt-5 flex items-center justify-between">
           <Link
             href={`/posts/${post.slug}`}
-            className="inline-flex items-center gap-2 rounded-lg border border-transparent bg-gradient-to-r from-purple-600 to-indigo-500 px-3 py-2 text-sm font-medium text-white shadow hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 px-3 py-2 text-sm font-medium text-white shadow transition-all duration-200 hover:brightness-105 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
             aria-label={`Read more about ${post.title}`}
           >
             Read more
-            <ChevronRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1" />
+            <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
         </div>
       </div>
     </article>
   );
 }
-

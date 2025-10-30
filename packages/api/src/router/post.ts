@@ -1,17 +1,9 @@
-import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
-import { posts, postToCategories, categories } from "../../../db/src/schema";
-import { createPostSchema } from "../validation";
-import { eq, and, desc, inArray, or, sql, type SQL } from "drizzle-orm";
-import { PgColumn } from "drizzle-orm/pg-core";
+import { z } from 'zod';
+import { createTRPCRouter, publicProcedure } from '../trpc';
+import { posts, postToCategories, categories } from '../../../db/src/schema';
+import { createPostSchema, updatePostSchema } from '../validation';
+import { eq, and, desc, inArray, or, sql, count } from 'drizzle-orm';
 import { ilike } from "drizzle-orm";
-
-function coalesce<T extends PgColumn | SQL>(
-  column: T,
-  defaultValue: string | number | SQL
-): SQL {
-  return sql`coalesce(${column}, ${defaultValue})`;
-}
 
 export const postRouter = createTRPCRouter({
   // --- CREATE POST ---
@@ -40,65 +32,81 @@ export const postRouter = createTRPCRouter({
       z.object({
         categorySlug: z.string().optional(),
         search: z.string().optional(),
-      })
+        page: z.number().min(1).max(50).optional().default(1),
+        limit: z.number().min(1).max(50).optional().default(9),
+      }),
     )
     .query(async ({ ctx, input }) => {
-      const { categorySlug, search } = input;
+      const { categorySlug, search, page, limit } = input;
+      const offset = (page - 1) * limit;
 
-      // Initialize conditions array with the published condition
       const conditions = [eq(posts.published, true)];
 
-      if (search) {
+       if (search) {
+
         const query = `%${search}%`;
+
         conditions.push(
+
           // @ts-ignore – column might be nullable but it’s fine for this query
+
           or(
+
             ilike(posts.title, query),
+
             ilike(sql`${posts.content}`, query),
+
             ilike(sql`${posts.authorName}`, query)
+
           )
+
         );
+
       }
 
-      // Conditionally add the category filter
       if (categorySlug) {
-        const selectedCategory = await ctx.db.query.categories.findFirst({
-          where: eq(categories.slug, categorySlug),
-          with: {
-            postToCategories: {
-              columns: {
-                postId: true,
-              },
-            },
-          },
-        });
+        const categorySubquery = ctx.db
+          .select({ postId: postToCategories.postId })
+          .from(categories)
+          .leftJoin(
+            postToCategories,
+            eq(categories.id, postToCategories.categoryId),
+          )
+          .where(eq(categories.slug, categorySlug));
 
-        if (
-          !selectedCategory ||
-          selectedCategory.postToCategories.length === 0
-        ) {
-          return []; // No category found or category has no posts
-        }
-
-        const postIds = selectedCategory.postToCategories.map((p) => p.postId);
-        // Add the category condition to our array
-        conditions.push(inArray(posts.id, postIds));
+        conditions.push(inArray(posts.id, categorySubquery));
       }
 
-      // Build the final query
-      const query = ctx.db
+      // --- Run queries in parallel ---
+      const totalQuery = ctx.db
+        .select({ count: count() })
+        .from(posts)
+        .where(and(...conditions));
+
+      const dataQuery = ctx.db
         .select()
         .from(posts)
-        .where(and(...conditions)) // Apply all conditions
-        .orderBy(desc(posts.createdAt)); // Apply orderBy last
+        .where(and(...conditions))
+        .orderBy(desc(posts.createdAt))
+        .limit(limit)
+        .offset(offset);
 
-      const allPosts = await query;
-      if (allPosts.length === 0) return [];
+      // 4. FIX: This 'allPosts' is from the 'dataQuery'
+      const [[{ count: totalCount }], allPosts] = await Promise.all([
+        totalQuery,
+        dataQuery,
+      ]);
+
+      if (allPosts.length === 0) {
+        return { posts: [], totalCount: 0 };
+      }
+
+      // 5. FIX: 'allPosts' was redeclared. The query was already run.
 
       const allRelations = await ctx.db.query.postToCategories.findMany({
         where: inArray(
           postToCategories.postId,
-          allPosts.map((p) => p.id)
+          allPosts.map((p) => p.id),
         ),
         with: {
           category: true,
@@ -112,18 +120,44 @@ export const postRouter = createTRPCRouter({
         return {
           ...post,
           categories: postCategories,
+          // Convert dates to strings
+          createdAt: post.createdAt.toISOString(),
+          updatedAt: post.updatedAt.toISOString(),
         };
       });
 
-      return postsWithCategories.filter((p) => p);
+      // 6. FIX: Return the correct object structure
+      return { posts: postsWithCategories.filter((p) => p), totalCount };
     }),
 
-  // --- 2. NEW `allForDashboard` PROCEDURE ---
-  allForDashboard: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.posts.findMany({
-      orderBy: [desc(posts.createdAt)],
-    });
-  }),
+  // --- 2. MODIFIED `allForDashboard` PROCEDURE ---
+  allForDashboard: publicProcedure
+    .input(
+      z.object({
+        page: z.number().min(1).optional().default(1),
+        limit: z.number().min(1).max(50).optional().default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { page, limit } = input;
+      const offset = (page - 1) * limit;
+
+      // Run queries in parallel
+      const totalQuery = ctx.db.select({ count: count() }).from(posts);
+      const dataQuery = ctx.db
+        .select()
+        .from(posts)
+        .orderBy(desc(posts.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      const [[{ count: totalCount }], allPosts] = await Promise.all([
+        totalQuery,
+        dataQuery,
+      ]);
+
+      return { posts: allPosts, totalCount };
+    }),
 
   // --- GET POST BY SLUG ---
   getBySlug: publicProcedure
@@ -134,12 +168,13 @@ export const postRouter = createTRPCRouter({
       });
 
       if (!post) {
-        throw new Error("Post not found");
+        throw new Error('Post not found');
       }
 
       return post;
     }),
 
+  // --- GET POST BY ID (for editing) ---
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -148,7 +183,7 @@ export const postRouter = createTRPCRouter({
       });
 
       if (!post) {
-        throw new Error("Post not found");
+        throw new Error('Post not found');
       }
 
       const relations = await ctx.db.query.postToCategories.findMany({
@@ -164,14 +199,18 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
+  // --- UPDATE POST ---
   update: publicProcedure
     .input(
-      createPostSchema.extend({
+      // 7. FIX: Use the correct input structure
+      z.object({
         id: z.number(),
-      })
+        data: updatePostSchema, // Use the schema from validation.ts
+      }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, categoryIds, ...postInput } = input;
+      const { id, data } = input;
+      const { categoryIds, ...postInput } = data as any;
 
       return ctx.db.transaction(async (tx) => {
         // 1. Update the post itself
@@ -181,14 +220,14 @@ export const postRouter = createTRPCRouter({
           .where(eq(posts.id, id))
           .returning();
 
-        // 2. Delete all existing category relationships for this post
+        // 2. Delete all existing category relationships
         await tx
           .delete(postToCategories)
           .where(eq(postToCategories.postId, id));
 
         // 3. Insert the new category relationships
         if (categoryIds && categoryIds.length > 0) {
-          const newRelations = categoryIds.map((catId) => ({
+          const newRelations = (categoryIds as number[]).map((catId: number) => ({
             postId: id,
             categoryId: catId,
           }));
@@ -214,13 +253,13 @@ export const postRouter = createTRPCRouter({
       });
     }),
 
-  // --- 3. NEW `updatePublishedStatus` MUTATION ---
+  // --- UPDATE PUBLISHED STATUS ---
   updatePublishedStatus: publicProcedure
     .input(
       z.object({
         id: z.number(),
         published: z.boolean(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const updatedPost = await ctx.db
@@ -232,3 +271,4 @@ export const postRouter = createTRPCRouter({
       return updatedPost[0];
     }),
 });
+

@@ -2,31 +2,38 @@ import { Suspense } from 'react';
 import { api } from '@/trpc/server-client';
 import { PostCard } from '@/components/blog/post-card';
 import { CategoryFilters } from '@/components/blog/category-filters';
+import { PaginationControls } from '@/components/blog/pagination-controls'; // 1. Import
 
-// Force this page to be dynamic to read searchParams
 export const dynamic = 'force-dynamic';
+const POSTS_PER_PAGE = 6; // Changed from 9 to 6
 
 interface BlogPageProps {
   searchParams: {
     category?: string;
     search?: string;
+    page?: string; // 2. Page is a string
   };
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  // --- THIS IS THE FIX ---
-  // You must 'await' the searchParams promise to get the object
   const params = await searchParams;
   const categorySlug = params?.category;
   const searchQuery = params?.search;
-  // --- END FIX ---
+  const currentPage = Number(params?.page) || 1; // 3. Get current page
 
-  // 3. Pass both filters to the API
-  const posts = await api.post.all({ categorySlug, search: searchQuery });
+  // 4. Fetch paginated data with limit of 6
+  const { posts, totalCount } = await api.post.all({
+    categorySlug,
+    search: searchQuery,
+    page: currentPage,
+    limit: POSTS_PER_PAGE, // Now this will be 6
+  });
+
+  // 5. Calculate total pages (now based on 6 posts per page)
+  const pageCount = Math.ceil(totalCount / POSTS_PER_PAGE);
 
   return (
     <main className="container mx-auto py-12 px-4 md:px-6">
-      {/* 4. Show a dynamic title */}
       {searchQuery ? (
         <h1 className="text-4xl font-bold mb-8">
           Results for: "{searchQuery}"
@@ -35,7 +42,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         <h1 className="text-4xl font-bold mb-8">All Posts</h1>
       )}
 
-      {/* Render the Category Filters */}
       <Suspense
         fallback={
           <div className="h-10 mb-8 w-full animate-pulse bg-muted rounded-lg" />
@@ -44,7 +50,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         <CategoryFilters activeSlug={categorySlug} />
       </Suspense>
 
-      {/* Render the Post List */}
+      {/* Grid layout - perfectly suits 6 cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map((post) => (
           // @ts-expect-error Server Component type mismatch
@@ -60,7 +66,16 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           </p>
         </div>
       )}
+
+      {/* Pagination - will show when more than 6 posts exist */}
+      {pageCount > 1 && (
+        <div className="mt-12 flex justify-center">
+          <PaginationControls
+            pageCount={pageCount}
+            currentPage={currentPage}
+          />
+        </div>
+      )}
     </main>
   );
 }
-

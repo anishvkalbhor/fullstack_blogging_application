@@ -12,17 +12,37 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem, // 1. Import DropdownMenuItem
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DeletePostButton } from '@/components/blog/delete-post-button';
 import { MoreHorizontal } from 'lucide-react';
 import { PublishSwitch } from '@/components/blog/publish-switch';
+import { PaginationControls } from '@/components/blog/pagination-controls'; // 1. Import
 
 export const dynamic = 'force-dynamic';
+const POSTS_PER_PAGE = 10; // Define a limit
 
-export default async function DashboardPage() {
-  const posts = await api.post.allForDashboard();
+interface DashboardPageProps {
+  searchParams: {
+    page?: string; // 2. Page is a string
+  };
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: DashboardPageProps) {
+  const params = await searchParams;
+  const currentPage = Number(params?.page) || 1; // 3. Get current page
+
+  // 4. Fetch paginated data
+  const { posts, totalCount } = await api.post.allForDashboard({
+    page: currentPage,
+    limit: POSTS_PER_PAGE,
+  });
+
+  // 5. Calculate total pages
+  const pageCount = Math.ceil(totalCount / POSTS_PER_PAGE);
 
   return (
     <main className="container mx-auto py-12">
@@ -78,7 +98,6 @@ export default async function DashboardPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        {/* 2. ADD THIS "EDIT" LINK */}
                         <DropdownMenuItem asChild>
                           <Link
                             href={`/dashboard/posts/${post.id}/edit`}
@@ -86,7 +105,6 @@ export default async function DashboardPage() {
                             Edit
                           </Link>
                         </DropdownMenuItem>
-                        {/* The Delete button is a client component */}
                         <DeletePostButton postId={post.id} />
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -97,6 +115,14 @@ export default async function DashboardPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* 6. Render Pagination */}
+      {pageCount > 1 && (
+        <PaginationControls
+          pageCount={pageCount}
+          currentPage={currentPage}
+        />
+      )}
     </main>
   );
 }

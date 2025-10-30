@@ -25,7 +25,7 @@ export default function RootLayout({
           {/* This layout creates a "sticky footer" */}
           <div className="flex min-h-screen flex-col">
             <Header />
-            <main className="flex-grow">{children}</main>
+            <main className="grow">{children}</main>
             <Footer />
           </div>
           <SonnerToaster />
