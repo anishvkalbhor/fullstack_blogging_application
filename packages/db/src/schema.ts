@@ -24,7 +24,7 @@ export const posts = pgTable("posts", {
   title: varchar("title", { length: 256 }).notNull(),
   content: text("content"),
   slug: varchar("slug", { length: 256 }).notNull().unique(),
-  published: boolean("publisheshed").default(false).notNull(),
+  published: boolean('published').default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

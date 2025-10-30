@@ -2,7 +2,7 @@ import { initTRPC } from '@trpc/server';
 import { db } from '../../db/src/index';
 
 // 1. Context
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+export const createTRPCContext = (opts: { headers: Headers }) => {
     return {
         db,
         ...opts,

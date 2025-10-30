@@ -1,13 +1,7 @@
-import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '../trpc';
 import { categories } from '../../../db/src/schema';
 
-// Zod schema for creating a category
-const createCategorySchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  slug: z.string().min(2).regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens"),
-  description: z.string().optional(),
-});
+import { createCategorySchema } from '../validation';
 
 export const categoryRouter = createTRPCRouter({
   // Create Category
