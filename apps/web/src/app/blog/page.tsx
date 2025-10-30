@@ -53,7 +53,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       {/* Grid layout - perfectly suits 6 cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map((post) => (
-          // @ts-expect-error Server Component type mismatch
           <PostCard key={post.id} post={post} />
         ))}
       </div>
