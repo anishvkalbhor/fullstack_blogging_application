@@ -11,17 +11,18 @@ export const dynamic = 'force-dynamic';
 const POSTS_PER_PAGE = 6;
 
 interface BlogPageProps {
-  searchParams: {
+  searchParams: Promise<{
     category?: string;
     search?: string;
     page?: string;
-  };
+  }>;
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  const categorySlug = searchParams?.category;
-  const searchQuery = searchParams?.search;
-  const currentPage = Number(searchParams?.page) || 1;
+  const params = await searchParams;
+  const categorySlug = params.category;
+  const searchQuery = params.search;
+  const currentPage = Number(params.page) || 1;
 
   const { posts, totalCount } = await api.post.all({
     categorySlug,

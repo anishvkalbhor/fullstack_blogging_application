@@ -16,7 +16,6 @@ interface PostPageProps {
   };
 }
 
-// --- SEO Metadata ---
 export async function generateMetadata(
   { params: paramsPromise }: PostPageProps,
   parent: ResolvingMetadata,
@@ -36,7 +35,6 @@ export async function generateMetadata(
   }
 }
 
-// --- Main Post Page ---
 export default async function PostPage({ params: paramsPromise }: PostPageProps) {
   const params = await paramsPromise;
   const { slug } = params;
@@ -59,7 +57,6 @@ export default async function PostPage({ params: paramsPromise }: PostPageProps)
     <main className="min-h-screen bg-gradient-to-b from-background via-background to-muted/40">
       <ReadingProgress />
 
-      {/* HERO SECTION */}
       <section className="relative isolate">
         <PostImage
           src={post.imageUrl ?? ''}
@@ -92,7 +89,6 @@ export default async function PostPage({ params: paramsPromise }: PostPageProps)
         </div>
       </section>
 
-      {/* ARTICLE CONTENT */}
       <article className="mx-auto max-w-3xl px-4 sm:px-6 md:px-8 py-16">
         <div className="flex justify-between items-center mb-10">
           <Button asChild variant="outline">
@@ -101,11 +97,6 @@ export default async function PostPage({ params: paramsPromise }: PostPageProps)
             </Link>
           </Button>
         </div>
-
-        {/* 2. THIS IS THE FIX:
-          We are now using 'dangerouslySetInnerHTML' to render the HTML
-          that Tiptap saved to your database.
-        */}
          <div
           className="
             prose 
