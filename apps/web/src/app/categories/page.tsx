@@ -35,7 +35,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { trpc } from "@/trpc/client";
-import { createCategorySchema } from "../../../../../packages/api/src/validation";
+// 1. FIX: Use the correct monorepo import alias
+import { createCategorySchema } from "api/validation";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -44,15 +45,15 @@ type CreateCategoryForm = z.infer<typeof createCategorySchema>;
 export default function CategoryPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Fix: Use trpc.useContext() instead of trpc.useUtils()
-  const utils = trpc.useContext();
+  // 2. FIX: The correct hook is 'trpc.useUtils()'
+  const utils = trpc.useUtils();
 
   const categoriesQuery = trpc.category.all.useQuery();
 
   const createCategory = trpc.category.create.useMutation({
     onSuccess: () => {
       toast.success("Category created successfully");
-      // Fix: Use invalidate method on the context
+      // This line is now correct
       utils.category.all.invalidate();
       setIsDialogOpen(false);
       form.reset();
@@ -91,7 +92,8 @@ export default function CategoryPage() {
   return (
     <main className="container mx-auto max-w-3xl py-12">
       <Button asChild variant="outline" className="mb-8">
-        <Link href="/">&larr; Back to all posts</Link>
+        {/* 3. FIX: Updated link to go to the blog page */}
+        <Link href="/blog">&larr; Back to all posts</Link>
       </Button>
 
       <div className="flex items-center justify-between mb-8">

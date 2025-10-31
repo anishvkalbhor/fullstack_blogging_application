@@ -8,14 +8,17 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler", // Changed from "node" to "bundler" for modern tooling
+    "moduleResolution": "bundler", 
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
     "noEmit": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./apps/web/src/*"],
+      "db": ["./packages/db/src"],
+      "db/*": ["./packages/db/src/*"],
+      "api/*": ["./packages/api/src/*"]
     }
   },
   "exclude": ["node_modules"]
