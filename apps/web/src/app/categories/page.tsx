@@ -43,7 +43,6 @@ type CreateCategoryForm = z.infer<typeof createCategorySchema>;
 export default function CategoryPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // 2. FIX: The correct hook is 'trpc.useUtils()'
   const utils = trpc.useUtils();
 
   const categoriesQuery = trpc.category.all.useQuery();
@@ -51,7 +50,6 @@ export default function CategoryPage() {
   const createCategory = trpc.category.create.useMutation({
     onSuccess: () => {
       toast.success("Category created successfully");
-      // This line is now correct
       utils.category.all.invalidate();
       setIsDialogOpen(false);
       form.reset();
