@@ -1,15 +1,12 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '../trpc';
 import { posts, postToCategories, categories } from '../../../../packages/db/src/schema';
-// 1. Import both validation schemas
 import { createPostSchema, updatePostSchema } from '../validation';
-// 2. Import 'sql', 'SQL', and 'count'
 import { eq, and, desc, inArray, or, sql, type SQL, count } from 'drizzle-orm';
-// 3. Import 'ilike' and 'PgColumn' from pg-core
 import { type PgColumn } from 'drizzle-orm/pg-core';
 import { ilike } from 'drizzle-orm';
+import { put } from '@vercel/blob';
 
-// Helper function to handle null values in SQL
 function coalesce<T extends PgColumn | SQL>(
   column: T,
   defaultValue: string | number | SQL,
@@ -38,7 +35,29 @@ export const postRouter = createTRPCRouter({
       });
     }),
 
-  // --- 1. MODIFIED `post.all` (FOR PUBLIC HOMEPAGE) ---
+  uploadImage: publicProcedure
+  .input(
+    z.object({
+      base64: z.string(),
+      filename: z.string(),
+    }),
+  )
+  .mutation(async ({ input }) => {
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!blobToken) {
+      throw new Error('Blob storage token is not configured');
+    }
+
+    const buffer = Buffer.from(input.base64.split(',')[1], 'base64');
+
+    const blob = await put(input.filename, buffer, {
+      access: 'public',
+      addRandomSuffix: true,
+      token: blobToken,
+    });
+    return blob;
+  }),
+
   all: publicProcedure
     .input(
       z.object({
@@ -270,4 +289,3 @@ export const postRouter = createTRPCRouter({
       return updatedPost[0];
     }),
 });
-
