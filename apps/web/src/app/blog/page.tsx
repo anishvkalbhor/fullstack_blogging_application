@@ -18,6 +18,25 @@ interface BlogPageProps {
   }>;
 }
 
+// Define the post interface based on your API response
+interface Post {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  imageUrl: string | null;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+  authorName: string;
+  categories: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+  }>;
+}
+
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const params = await searchParams;
   const categorySlug = params.category;
@@ -83,7 +102,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
       {/* Posts Grid - Responsive */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {posts.map((post) => (
+        {posts.map((post: Post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>
