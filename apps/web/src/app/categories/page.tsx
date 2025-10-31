@@ -19,7 +19,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -35,7 +34,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { trpc } from "@/trpc/client";
-// 1. FIX: Use the correct monorepo import alias
 import { createCategorySchema } from "api/validation";
 import { useState } from "react";
 import Link from "next/link";
