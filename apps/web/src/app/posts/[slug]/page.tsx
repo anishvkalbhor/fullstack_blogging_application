@@ -11,9 +11,9 @@ import { ReadingProgress } from '@/components/blog/reading-progress';
 import parse from 'html-react-parser';
 
 interface PostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata(

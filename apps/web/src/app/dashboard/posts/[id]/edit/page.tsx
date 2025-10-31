@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 interface EditPostPageProps {
-  params: {
-    id: string; // The post ID from the URL
-  };
+  params: Promise<{
+    id: string; 
+  }>;
 }
 
 // This is a Server Component

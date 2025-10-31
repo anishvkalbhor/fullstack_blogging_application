@@ -34,15 +34,16 @@ export const dynamic = 'force-dynamic';
 const POSTS_PER_PAGE = 10;
 
 interface DashboardPageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
-  };
+  }>;
 }
 
 export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
-  const currentPage = Number(searchParams?.page) || 1;
+  const params = await searchParams;
+  const currentPage = Number(params?.page) || 1;
 
   const { posts, totalCount } = await api.post.allForDashboard({
     page: currentPage,
