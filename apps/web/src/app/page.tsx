@@ -4,9 +4,8 @@ import { api } from '@/trpc/server-client';
 import { HeroSearch } from '@/components/blog/hero-search';
 import { StripedPattern } from '@/components/magicui/striped-pattern';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils'; // Make sure you have this utility
+import { cn } from '@/lib/utils';
 
-// 1. Define the Post type (this must match your tRPC return type)
 type Category = {
   id: number;
   name: string;
@@ -17,18 +16,17 @@ type PostWithCategories = {
   title: string;
   slug: string;
   content: string | null;
-  createdAt: string; // This is a string (ISO date) from your API
+  createdAt: string;
   authorName: string;
   imageUrl: string | null;
   categories: Category[];
 };
 
 export default async function LandingPage() {
-  // 2. Fetch posts and directly get the 'posts' array
   const { posts: recentPosts } = (await api.post.all({
     page: 1,
-    limit: 3, // Fetch only 3 posts
-  })) as { posts: PostWithCategories[] }; // Assert the correct type
+    limit: 3,
+  })) as { posts: PostWithCategories[] };
 
   if (!recentPosts || recentPosts.length === 0)
     return (
@@ -60,7 +58,6 @@ export default async function LandingPage() {
         <HeroSearch />
       </section>
 
-      {/* Recent Posts Section */}
       <section className="bg-background py-20 md:py-28">
         <div className="container mx-auto max-w-6xl px-4 md:px-6">
           <div className="text-center mb-16">
@@ -72,9 +69,7 @@ export default async function LandingPage() {
             </p>
           </div>
 
-          {/* Bento Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Featured Post */}
             <Link
               href={`/posts/${mainPost.slug}`}
               className="group relative col-span-2 overflow-hidden rounded-2xl border border-border bg-card transition-all hover:shadow-lg"
@@ -112,7 +107,6 @@ export default async function LandingPage() {
                     : 'No content available.'}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {/* 3. FIX: Removed '(cat: any)' */}
                   {mainPost.categories?.slice(0, 3).map((cat) => (
                     <Badge
                       key={cat.id}
@@ -126,9 +120,7 @@ export default async function LandingPage() {
               </div>
             </Link>
 
-            {/* Side Posts */}
             <div className="flex flex-col gap-8">
-              {/* 4. FIX: Removed '(post: any)' */}
               {sidePosts.map((post) => (
                 <Link
                   key={post.id}
@@ -166,7 +158,6 @@ export default async function LandingPage() {
                         : 'No content available.'}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {/* 5. FIX: Removed '(cat: any)' */}
                       {post.categories?.slice(0, 2).map((cat) => (
                         <Badge
                           key={cat.id}
@@ -183,7 +174,6 @@ export default async function LandingPage() {
             </div>
           </div>
 
-          {/* CTA */}
           <div className="mt-16 text-center">
             <Link
               href="/blog"
@@ -195,7 +185,6 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Footer CTA */}
       <section className="container max-w-5xl mx-auto text-center py-20 md:py-32 px-4 md:px-6">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
           Explore All Our Articles

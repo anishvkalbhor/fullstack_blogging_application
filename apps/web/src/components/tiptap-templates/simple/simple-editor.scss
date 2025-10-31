@@ -55,29 +55,21 @@ body,
 }
 
 .simple-editor-wrapper {
-  width: 100vw;
-  height: 100vh;
-  overflow: auto;
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 100%;
   box-sizing: border-box;
 }
 
 .simple-editor-content {
-  max-width: 648px;
   width: 100%;
-  margin: 0 auto;
-  height: 100%;
+  margin: 0;
   display: flex;
   flex-direction: column;
   flex: 1;
-  width: 100%;
-  max-width: 100%;
   margin-top: 16px;
 }
 
@@ -94,7 +86,7 @@ body,
   box-sizing: border-box;
   resize: vertical;
   overflow: auto;
-  transition: border-color 0.2s ease; /* Smooth border transition on focus */
+  transition: border-color 0.2s ease;
 }
 
 @media screen and (max-width: 480px) {
@@ -103,10 +95,49 @@ body,
   }
 }
 
-// Override any TipTap toolbar positioning
+// Fix toolbar positioning and alignment
+.tiptap-toolbar-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
 .tiptap-toolbar {
   width: 100% !important;
   max-width: 100% !important;
   margin: 0 !important;
-  justify-content: center;
+  padding: 0 !important;
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  transform: none !important;
+
+  // Mobile specific fixes
+  @media screen and (max-width: 640px) {
+    position: static !important;
+    transform: none !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+// Mobile toolbar specific styling
+@media screen and (max-width: 640px) {
+  .simple-editor-wrapper {
+    padding: 0;
+  }
+
+  .tiptap-toolbar-container {
+    position: relative;
+    z-index: 10;
+  }
+
+  .simple-editor-content {
+    margin-top: 8px;
+  }
 }

@@ -125,57 +125,83 @@ export function SimpleEditor({ value = '', onChange }: SimpleEditorProps) {
   // Force light theme and reset any positioning
   useEffect(() => {
     document.documentElement.classList.remove("dark")
-    document.body.style.margin = "0"
-    document.body.style.padding = "0"
   }, [])
 
   return (
     <div className="simple-editor-wrapper">
       <EditorContext.Provider value={{ editor }}>
-        <Toolbar ref={toolbarRef} className="tiptap-toolbar">
-          <Spacer />
+        {/* Mobile-First Responsive Toolbar */}
+        <div className="tiptap-toolbar-container sm:gap-10">
+          <Toolbar ref={toolbarRef} className="tiptap-toolbar">
+            {/* Mobile Layout - Priority buttons only */}
+            <div className="block sm:hidden w-full">
+              <div className="flex flex-wrap gap-1 p-2 border-none">
+                {/* Essential Mobile Tools Row 1 */}
+                <div className="flex gap-1 mb-2">
+                  <UndoRedoButton action="undo" />
+                  <UndoRedoButton action="redo" />
+                  <div className="w-px h-6 bg-border mx-1" />
+                  <MarkButton type="bold" />
+                  <MarkButton type="italic" />
+                </div>
+                
+                {/* Essential Mobile Tools Row 2 */}
+                <div className="flex gap-1">
+                  <HeadingDropdownMenu levels={[1, 2, 3]} />
+                  <ListDropdownMenu types={["bulletList", "orderedList"]} />
+                  <LinkPopover />
+                </div>
+              </div>
+            </div>
 
-          <ToolbarGroup>
-            <UndoRedoButton action="undo" />
-            <UndoRedoButton action="redo" />
-          </ToolbarGroup>
+            {/* Desktop Layout - Full toolbar */}
+            <div className="hidden sm:flex w-full items-center">
+              <Spacer />
 
-          <ToolbarSeparator />
+              <ToolbarGroup>
+                <UndoRedoButton action="undo" />
+                <UndoRedoButton action="redo" />
+              </ToolbarGroup>
 
-          <ToolbarGroup>
-            <HeadingDropdownMenu levels={[1, 2, 3]} />
-            <ListDropdownMenu types={["bulletList", "orderedList", "taskList"]} />
-            <BlockquoteButton />
-            <CodeBlockButton />
-          </ToolbarGroup>
+              <ToolbarSeparator />
 
-          <ToolbarSeparator />
+              <ToolbarGroup>
+                <HeadingDropdownMenu levels={[1, 2, 3]} />
+                <ListDropdownMenu types={["bulletList", "orderedList", "taskList"]} />
+                <BlockquoteButton />
+                <CodeBlockButton />
+              </ToolbarGroup>
 
-          <ToolbarGroup>
-            <MarkButton type="bold" />
-            <MarkButton type="italic" />
-            <MarkButton type="strike" />
-            <MarkButton type="code" />
-            <LinkPopover />
-          </ToolbarGroup>
+              <ToolbarSeparator />
 
-          <ToolbarSeparator />
+              <ToolbarGroup>
+                <MarkButton type="bold" />
+                <MarkButton type="italic" />
+                <MarkButton type="strike" />
+                <MarkButton type="code" />
+                <LinkPopover />
+              </ToolbarGroup>
 
-          <ToolbarGroup>
-            <TextAlignButton align="left" />
-            <TextAlignButton align="center" />
-            <TextAlignButton align="right" />
-          </ToolbarGroup>
+              <ToolbarSeparator />
 
-          <ToolbarSeparator />
+              <ToolbarGroup>
+                <TextAlignButton align="left" />
+                <TextAlignButton align="center" />
+                <TextAlignButton align="right" />
+              </ToolbarGroup>
 
-          <ToolbarGroup>
-            <ImageUploadButton text="Image" />
-          </ToolbarGroup>
+              <ToolbarSeparator />
 
-          <Spacer />
-        </Toolbar>
+              <ToolbarGroup>
+                <ImageUploadButton text="Image" />
+              </ToolbarGroup>
 
+              <Spacer />
+            </div>
+          </Toolbar>
+        </div>
+
+        {/* Editor Content with proper spacing */}
         <EditorContent
           editor={editor}
           role="presentation"

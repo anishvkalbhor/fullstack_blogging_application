@@ -1,9 +1,21 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '../trpc';
-import { posts, postToCategories, categories } from '../../../db/src/schema';
+import { posts, postToCategories, categories } from '../../../../packages/db/src/schema';
+// 1. Import both validation schemas
 import { createPostSchema, updatePostSchema } from '../validation';
-import { eq, and, desc, inArray, or, sql, count } from 'drizzle-orm';
-import { ilike } from "drizzle-orm";
+// 2. Import 'sql', 'SQL', and 'count'
+import { eq, and, desc, inArray, or, sql, type SQL, count } from 'drizzle-orm';
+// 3. Import 'ilike' and 'PgColumn' from pg-core
+import { type PgColumn } from 'drizzle-orm/pg-core';
+import { ilike } from 'drizzle-orm';
+
+// Helper function to handle null values in SQL
+function coalesce<T extends PgColumn | SQL>(
+  column: T,
+  defaultValue: string | number | SQL,
+): SQL {
+  return sql`coalesce(${column}, ${defaultValue})`;
+}
 
 export const postRouter = createTRPCRouter({
   // --- CREATE POST ---
@@ -42,26 +54,16 @@ export const postRouter = createTRPCRouter({
 
       const conditions = [eq(posts.published, true)];
 
-       if (search) {
-
+      if (search) {
         const query = `%${search}%`;
-
         conditions.push(
-
           // @ts-ignore – column might be nullable but it’s fine for this query
-
           or(
-
             ilike(posts.title, query),
-
-            ilike(sql`${posts.content}`, query),
-
-            ilike(sql`${posts.authorName}`, query)
-
-          )
-
+            ilike(coalesce(posts.content, sql`''`), query),
+            ilike(coalesce(posts.authorName, sql`''`), query),
+          ),
         );
-
       }
 
       if (categorySlug) {
@@ -91,7 +93,6 @@ export const postRouter = createTRPCRouter({
         .limit(limit)
         .offset(offset);
 
-      // 4. FIX: This 'allPosts' is from the 'dataQuery'
       const [[{ count: totalCount }], allPosts] = await Promise.all([
         totalQuery,
         dataQuery,
@@ -100,8 +101,6 @@ export const postRouter = createTRPCRouter({
       if (allPosts.length === 0) {
         return { posts: [], totalCount: 0 };
       }
-
-      // 5. FIX: 'allPosts' was redeclared. The query was already run.
 
       const allRelations = await ctx.db.query.postToCategories.findMany({
         where: inArray(
@@ -127,7 +126,7 @@ export const postRouter = createTRPCRouter({
       });
 
       // 6. FIX: Return the correct object structure
-      return { posts: postsWithCategories.filter((p) => p), totalCount };
+      return { posts: postsWithCategories, totalCount };
     }),
 
   // --- 2. MODIFIED `allForDashboard` PROCEDURE ---
@@ -202,15 +201,15 @@ export const postRouter = createTRPCRouter({
   // --- UPDATE POST ---
   update: publicProcedure
     .input(
-      // 7. FIX: Use the correct input structure
       z.object({
         id: z.number(),
-        data: updatePostSchema, // Use the schema from validation.ts
+        data: updatePostSchema, 
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, data } = input;
-      const { categoryIds, ...postInput } = data as any;
+      const categoryIds = (data as { categoryIds?: number[] | undefined }).categoryIds;
+      const postInput = (({ categoryIds, ...rest }: any) => rest)(data);
 
       return ctx.db.transaction(async (tx) => {
         // 1. Update the post itself
@@ -227,7 +226,7 @@ export const postRouter = createTRPCRouter({
 
         // 3. Insert the new category relationships
         if (categoryIds && categoryIds.length > 0) {
-          const newRelations = (categoryIds as number[]).map((catId: number) => ({
+          const newRelations = categoryIds.map((catId) => ({
             postId: id,
             categoryId: catId,
           }));

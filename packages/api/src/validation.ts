@@ -9,10 +9,8 @@ export const createPostSchema = z.object({
     imageUrl: z.string().url("Image URL must be a valid URL").optional(),
 });
 
-export const updatePostSchema = z.object({
-    id: z.number(),
-    data: createPostSchema.partial(),
-});
+// Fix: Change this to just be the partial schema, not nested
+export const updatePostSchema = createPostSchema.partial();
 
 export const createCategorySchema = z.object({
     name: z.string().min(2, "Category name must be at least 2 characters long"),
