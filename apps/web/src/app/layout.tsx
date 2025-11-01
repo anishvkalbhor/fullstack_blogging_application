@@ -22,7 +22,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <TRPCProvider>
-          {/* This layout creates a "sticky footer" */}
           <div className="flex min-h-screen flex-col">
             <Header />
             <main className="grow">{children}</main>
