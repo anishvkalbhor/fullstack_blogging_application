@@ -1,19 +1,20 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
-import * as dotenv from 'dotenv'; // Import all of dotenv
+import * as dotenv from 'dotenv';
+import path from 'path';
 
-// Specify the path to the root .env file
-// Note: This one goes up TWO levels (from /src/index.ts to the root)
-dotenv.config({ path: '../../.env' });
+if (!process.env.DATABASE_URL) {
+  dotenv.config({
+    path: path.resolve(process.cwd(), '../../.env'),
+  });
+}
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is not set in .env file');
 }
 
-// for query
-const queryClient = postgres(process.env.DATABASE_URL);
-export const db = drizzle(queryClient, { schema });
+const client = postgres(process.env.DATABASE_URL);
+export const db = drizzle(client, { schema });
 
-// for migrations
 export const migrationClient = postgres(process.env.DATABASE_URL, { max: 1 });
