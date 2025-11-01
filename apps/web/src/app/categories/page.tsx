@@ -34,7 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { trpc } from "@/trpc/client";
-import { createCategorySchema } from "api/validation";
+import { createCategorySchema } from "../../../../../packages/api/src/validation";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -43,14 +43,14 @@ type CreateCategoryForm = z.infer<typeof createCategorySchema>;
 export default function CategoryPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const utils = trpc.useUtils();
-
+  // Query to fetch categories
   const categoriesQuery = trpc.category.all.useQuery();
 
+  // Mutation to create a category
   const createCategory = trpc.category.create.useMutation({
     onSuccess: () => {
       toast.success("Category created successfully");
-      utils.category.all.invalidate();
+      categoriesQuery.refetch();
       setIsDialogOpen(false);
       form.reset();
     },
@@ -61,6 +61,7 @@ export default function CategoryPage() {
     },
   });
 
+  // Form setup
   const form = useForm<CreateCategoryForm>({
     resolver: zodResolver(createCategorySchema),
     defaultValues: {
@@ -70,11 +71,13 @@ export default function CategoryPage() {
     },
   });
 
+  // Handle form submission
   function onSubmit(values: CreateCategoryForm) {
     if (createCategory.isPending) return;
     createCategory.mutate(values);
   }
 
+  // Auto-generate slug from name
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
     form.setValue("name", name);
@@ -88,12 +91,12 @@ export default function CategoryPage() {
   return (
     <main className="container mx-auto max-w-3xl py-12">
       <Button asChild variant="outline" className="mb-8">
-        {/* 3. FIX: Updated link to go to the blog page */}
         <Link href="/blog">&larr; Back to all posts</Link>
       </Button>
 
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-4xl font-bold">Manage Categories</h1>
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>Create Category</Button>
@@ -105,6 +108,7 @@ export default function CategoryPage() {
                 Add a new category for your posts.
               </DialogDescription>
             </DialogHeader>
+
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -127,6 +131,7 @@ export default function CategoryPage() {
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
                   name="slug"
@@ -140,6 +145,7 @@ export default function CategoryPage() {
                     </FormItem>
                   )}
                 />
+
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button type="button" variant="ghost">
