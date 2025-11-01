@@ -78,3 +78,5 @@ export async function DELETE(request: Request, context: RouteContext) {
     return NextResponse.json({ message: "Failed to delete category" }, { status: 500 });
   }
 }
+
+console.log("SERVER-SIDE DATABASE_URL:", process.env.DATABASE_URL);
