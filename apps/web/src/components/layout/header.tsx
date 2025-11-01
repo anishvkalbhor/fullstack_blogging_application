@@ -3,24 +3,22 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Menu, Feather, Search, Sun, Moon, User } from 'lucide-react';
+import { Menu, Feather } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useTheme } from 'next-themes';
+import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 
 const NAV_LINKS = [
-  { href: '/', label: 'Home' },
   { href: '/blog', label: 'Blog' },
   { href: '/categories', label: 'Categories' },
+  { href: '/posts/create', label: 'Create Post' },
   { href: '/dashboard', label: 'Dashboard' },
 ];
 
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
 
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
@@ -52,6 +50,14 @@ export function Header() {
             );
           })}
         </nav>
+
+        <div className="flex items-center gap-2">
+          {/* --- Right: Actions --- */}
+          <ToggleTheme
+            duration={600}
+            animationType="shrink-grow"
+          />
+
           {/* Mobile Menu */}
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
@@ -77,6 +83,7 @@ export function Header() {
             </SheetContent>
           </Sheet>
         </div>
+      </div>
     </header>
   );
 }

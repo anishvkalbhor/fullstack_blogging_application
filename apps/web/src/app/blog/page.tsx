@@ -54,7 +54,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
   return (
     <main className="container mx-auto max-w-6xl py-12">
-      <h1 className="text-5xl font-bold mb-8">The Blog</h1>
+      <h1 className="text-5xl font-bold mb-8 text-center">All Blogs</h1>
 
       <CategoryFilters activeSlug={categorySlug} />
 

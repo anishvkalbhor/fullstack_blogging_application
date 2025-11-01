@@ -5,22 +5,12 @@ import { Github, Twitter, Linkedin, Feather, Mail, Heart, ArrowUp } from 'lucide
 import { Button } from '@/components/ui/button';
 
 const footerSections = {
-  company: {
-    title: 'Company',
-    links: [
-      { label: 'About Us', href: '/about' },
-      { label: 'Contact', href: '/contact' },
-      { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Terms of Service', href: '/terms' },
-    ]
-  },
   content: {
     title: 'Content',
     links: [
       { label: 'Blog', href: '/blog' },
       { label: 'Categories', href: '/categories' },
-      { label: 'Latest Posts', href: '/blog?sort=latest' },
-      { label: 'Popular Posts', href: '/blog?sort=popular' },
+      { label: 'Dashboard', href: '/dashboard' },
     ]
   }
 };
@@ -72,7 +62,7 @@ export function Footer() {
               </Link>
               
               <p className="text-muted-foreground text-lg leading-relaxed max-w-md">
-                Empowering developers with insightful articles, tutorials, and the latest trends in web development.
+                Your space to write, learn, and grow - share tutorials, insights, and innovations in tech and beyond.
               </p>
             </div>
             
@@ -134,7 +124,7 @@ export function Footer() {
               <span>© {new Date().getFullYear()} DevPress.</span>
               <span>Made with</span>
               <Heart className="h-4 w-4 text-red-500 fill-current animate-pulse" />
-              <span>for developers</span>
+              <span>for everyone</span>
             </div>
           </div>
         </div>

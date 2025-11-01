@@ -28,7 +28,6 @@ interface PostCardProps {
 
 function readingTime(text?: string | null) {
   if (!text) return '1 min read';
-  // Strip HTML tags before counting words
   const cleanText = text.replace(/<[^>]*>/g, '');
   const words = cleanText.trim().split(/\s+/).length;
   const minutes = Math.max(1, Math.round(words / 200));
@@ -36,16 +35,15 @@ function readingTime(text?: string | null) {
 }
 
 function stripHtmlTags(html: string): string {
-  // Remove HTML tags and decode HTML entities
   return html
-    .replace(/<[^>]*>/g, '') // Remove HTML tags
-    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
-    .replace(/&amp;/g, '&') // Replace &amp; with &
-    .replace(/&lt;/g, '<') // Replace &lt; with <
-    .replace(/&gt;/g, '>') // Replace &gt; with >
-    .replace(/&quot;/g, '"') // Replace &quot; with "
-    .replace(/&#39;/g, "'") // Replace &#39; with '
-    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -66,9 +64,8 @@ export function PostCard({ post, className }: PostCardProps) {
     year: 'numeric',
   });
 
-  // Strip HTML tags from content for clean snippet
   const snippet = post.content
-    ? stripHtmlTags(post.content).slice(0, 160).trim() + '…'
+    ? stripHtmlTags(post.content).slice(0, 150).trim() + '…'
     : 'No content available.';
 
   const imageUrl =
@@ -80,109 +77,105 @@ export function PostCard({ post, className }: PostCardProps) {
   return (
     <article
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-2xl bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-md',
+        'group flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-neutral-900 shadow-sm transition-all duration-300 hover:shadow-lg',
         className,
       )}
-      aria-labelledby={`post-${post.id}-title`}
     >
-      {/* IMAGE + TAGS */}
+      {/* IMAGE SECTION */}
       <div className="relative h-56 w-full overflow-hidden md:h-64">
         <Link href={`/posts/${post.slug}`} aria-label={`Open ${post.title}`}>
           <img
             src={imageUrl}
             alt={post.title}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-700 ease-out"
+            className="h-full w-full object-cover transition-all duration-500 ease-out"
             onError={(e) => {
-              e.currentTarget.src =
-                'https://placehold.co/900x600/ddd/666?text=No+Image';
+              e.currentTarget.src = 'https://placehold.co/900x600/ddd/666?text=No+Image';
             }}
           />
-          {/* subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         </Link>
 
-        <div className="absolute left-4 top-4 flex flex-wrap gap-2 z-20">
+        {/* Category Tags */}
+        <div className="absolute left-4 top-4 z-20 flex flex-wrap gap-2">
           {post.categories.length > 0 ? (
-            post.categories.slice(0, 3).map((cat) => (
-              <a
+            post.categories.slice(0, 2).map((cat) => (
+              <Badge
                 key={cat.id}
-                href={`/blog?category=${cat.slug}`}
-                className="group"
-                aria-label={`Filter by ${cat.name}`}
+                variant="secondary"
+                className={cn(
+                  'rounded-full px-2.5 py-0.5 text-xs font-medium',
+                  'bg-white/90 text-gray-800 backdrop-blur-md dark:bg-neutral-800/80 dark:text-gray-100',
+                  'border border-gray-200 dark:border-neutral-700',
+                  'hover:bg-purple-100 hover:text-purple-700 dark:hover:bg-purple-900/40 dark:hover:text-purple-300 transition-colors duration-300',
+                )}
               >
-                <Badge
-                  variant="outline"
-                  className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-gray-800 backdrop-blur-sm transition-colors duration-200 group-hover:bg-white/30 dark:bg-purple-900/40 dark:text-purple-100"
-                >
-                  {cat.name}
-                </Badge>
-              </a>
+                {cat.name}
+              </Badge>
             ))
           ) : (
-            <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-xs">
+            <Badge
+              variant="secondary"
+              className="rounded-full bg-white/80 text-gray-700 dark:bg-neutral-800/80 dark:text-gray-200 px-2.5 py-0.5 text-xs font-medium"
+            >
               Uncategorized
             </Badge>
           )}
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="flex flex-1 flex-col justify-between p-5">
-        {/* meta row: avatar, author, date, reading time */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            {/* avatar (initials fallback) */}
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-white"
-              style={{
-                background:
-                  'linear-gradient(135deg, rgba(124,58,237,0.95), rgba(59,130,246,0.9))',
-              }}
-              aria-hidden
-            >
-              {initials(post.authorName || 'A')}
-            </div>
-
-            <div className="flex flex-col">
-              <span className="text-sm font-medium leading-none">{post.authorName}</span>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <time dateTime={date.toISOString()}>{formattedDate}</time>
-                <span aria-hidden>•</span>
-                <span>{readingTime(post.content)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* small icon for readability */}
-          <div className="hidden items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground md:flex">
-            <CalendarDays className="h-4 w-4" />
-            <span className="text-sm">{formattedDate}</span>
-          </div>
-        </div>
-
-        {/* title & excerpt */}
-        <div className="mt-4">
-          <h3
-            id={`post-${post.id}-title`}
-            className="line-clamp-2 text-lg font-semibold leading-tight transition-colors duration-200 group-hover:text-purple-600"
+      {/* CONTENT SECTION */}
+      <div className="flex flex-1 flex-col justify-between p-6">
+        {/* Meta Info */}
+        <div className="flex items-center gap-3 mb-4">
+          <div
+            className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white shadow-md shrink-0"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(124,58,237,0.95), rgba(59,130,246,0.9))',
+            }}
           >
-            <Link href={`/posts/${post.slug}`}>{post.title}</Link>
-          </h3>
-
-          <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{snippet}</p>
+            {initials(post.authorName || 'A')}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              {post.authorName}
+            </span>
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <time dateTime={date.toISOString()}>{formattedDate}</time>
+              <span>•</span>
+              <span>{readingTime(post.content)}</span>
+            </div>
+          </div>
         </div>
 
-        {/* footer: Read more */}
+        {/* Title */}
+        <h3
+          id={`post-${post.id}-title`}
+          className="text-lg font-semibold leading-snug text-gray-900 dark:text-gray-100 transition-colors duration-300 group-hover:text-purple-600"
+        >
+          <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+        </h3>
+
+        {/* Snippet */}
+        <p className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-3">
+          {snippet}
+        </p>
+
+        {/* Footer */}
         <div className="mt-5 flex items-center justify-between">
           <Link
             href={`/posts/${post.slug}`}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 px-3 py-2 text-sm font-medium text-white shadow transition-all duration-200 hover:brightness-105 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
-            aria-label={`Read more about ${post.title}`}
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 px-3 py-2 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:brightness-110 hover:shadow-md"
           >
             Read more
-            <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
+
+          <div className="hidden items-center gap-1 text-xs text-gray-500 dark:text-gray-400 md:flex">
+            <CalendarDays className="h-4 w-4" />
+            <span>{formattedDate}</span>
+          </div>
         </div>
       </div>
     </article>

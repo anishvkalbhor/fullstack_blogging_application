@@ -122,11 +122,6 @@ export function SimpleEditor({ value = '', onChange }: SimpleEditorProps) {
     }
   }, [editor, value])
 
-  // Force light theme and reset any positioning
-  useEffect(() => {
-    document.documentElement.classList.remove("dark")
-  }, [])
-
   return (
     <div className="simple-editor-wrapper">
       <EditorContext.Provider value={{ editor }}>

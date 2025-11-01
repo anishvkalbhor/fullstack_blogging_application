@@ -1,5 +1,17 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
+:root {
+  --editor-bg: white;
+  --editor-border-color: #e2e8f0; /* slate-200 */
+  --editor-text-color: #0f172a; /* slate-900 */
+}
+
+.dark {
+  --editor-bg: #0f172a; /* slate-900 */
+  --editor-border-color: #334155; /* slate-700 */
+  --editor-text-color: #cbd5e1; /* slate-300 */
+}
+
 body {
   --tt-toolbar-height: 44px;
   --tt-theme-text: var(--tt-gray-light-900);
@@ -77,16 +89,21 @@ body,
   flex: 1;
   padding: 16px;
   outline: none;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--editor-border-color);
   border-radius: 8px;
   min-height: 200px;
   max-height: 800px;
-  background: white;
+  background: var(--editor-bg);
+  color: var(--editor-text-color);
   width: 100%;
   box-sizing: border-box;
   resize: vertical;
   overflow: auto;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.dark .simple-editor-content .tiptap.ProseMirror.simple-editor:focus {
+  border-color: #475569; /* slate-600 */
 }
 
 @media screen and (max-width: 480px) {
