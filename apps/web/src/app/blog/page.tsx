@@ -53,90 +53,28 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const pageCount = Math.ceil(totalCount / POSTS_PER_PAGE);
 
   return (
-    <main className="container mx-auto py-8 md:py-12 px-4 md:px-6 max-w-7xl">
-      
-      {/* Header Section - Responsive */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-        <div className="flex-1">
-          {searchQuery ? (
-            <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
-                Search Results
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Found {totalCount} result{totalCount !== 1 ? 's' : ''} for "{searchQuery}"
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
-                All Posts
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Discover {totalCount} article{totalCount !== 1 ? 's' : ''} and insights
-              </p>
-            </div>
-          )}
-        </div>
-        
-        {/* Create Post Button - Responsive */}
-        <div className="shrink-0">
-          <Button asChild size="default" className="w-full sm:w-auto">
-            <Link href="/posts/create" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              <span className="hidden xs:inline">Create New Post</span>
-              <span className="xs:hidden">Create</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
+    <main className="container mx-auto max-w-6xl py-12">
+      <h1 className="text-5xl font-bold mb-8">The Blog</h1>
 
-      {/* Category Filters */}
-      <Suspense
-        fallback={
-          <div className="h-10 mb-6 md:mb-8 w-full animate-pulse bg-muted rounded-lg" />
-        }
-      >
-        <CategoryFilters activeSlug={categorySlug} />
-      </Suspense>
+      <CategoryFilters activeSlug={categorySlug} />
 
-      {/* Posts Grid - Responsive */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {posts.map((post: Post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {posts.length === 0 && (
-        <div className="text-center py-16 md:py-20 px-4">
-          <div className="max-w-md mx-auto space-y-4">
-            <h2 className="text-xl md:text-2xl font-semibold">No posts found</h2>
-            <p className="text-sm md:text-base text-muted-foreground">
-              {searchQuery 
-                ? "Try adjusting your search terms or browse all posts." 
-                : "No posts have been created yet. Be the first to share your thoughts!"
-              }
-            </p>
-            <div className="pt-4">
-              <Button asChild>
-                <Link href={searchQuery ? "/blog" : "/posts/create"}>
-                  {searchQuery ? "Browse All Posts" : "Create First Post"}
-                </Link>
-              </Button>
-            </div>
-          </div>
+      {posts.length === 0 ? (
+        <p className="text-center text-muted-foreground text-lg">
+          No posts found.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {posts.map((post: Post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
         </div>
       )}
 
-      {/* Pagination */}
       {pageCount > 1 && (
-        <div className="mt-12 md:mt-16 flex justify-center px-4">
-          <PaginationControls
-            pageCount={pageCount}
-            currentPage={currentPage}
-          />
-        </div>
+        <PaginationControls
+          pageCount={pageCount}
+          currentPage={currentPage}
+        />
       )}
       
       {/* Page Info for Mobile */}

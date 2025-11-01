@@ -1,6 +1,12 @@
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/trpc/server-client';
 
+interface Category {
+  id: number; 
+  name: string;
+  slug: string;
+}
+
 interface CategoryFiltersProps {
   activeSlug?: string;
 }
@@ -10,7 +16,6 @@ export async function CategoryFilters({ activeSlug }: CategoryFiltersProps) {
 
   return (
     <nav className="flex flex-wrap gap-2 mb-8">
-      {/* "All Posts" Link - Replaced <Link> with <a> */}
       <a href="/blog">
         <Badge
           variant={!activeSlug ? 'default' : 'outline'}
@@ -19,8 +24,7 @@ export async function CategoryFilters({ activeSlug }: CategoryFiltersProps) {
           All Posts
         </Badge>
       </a>
-      {/* Map over the categories - Replaced <Link> with <a> */}
-      {categories.map((category) => (
+      {categories.map((category: Category) => (
         <a
           href={`/blog?category=${category.slug}`}
           key={category.id}
