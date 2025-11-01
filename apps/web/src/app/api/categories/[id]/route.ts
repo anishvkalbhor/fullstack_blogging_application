@@ -9,9 +9,6 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-/* -----------------------------------------
- ✏️ PUT — Update Category
------------------------------------------ */
 export async function PUT(request: Request, context: RouteContext) {
   try {
     // ✅ Unwrap the params Promise
@@ -45,9 +42,6 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-/* -----------------------------------------
- 🗑️ DELETE — Delete Category (with cleanup)
------------------------------------------ */
 export async function DELETE(request: Request, context: RouteContext) {
   try {
     // ✅ Unwrap the params Promise
