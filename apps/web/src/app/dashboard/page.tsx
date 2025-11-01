@@ -39,13 +39,27 @@ interface DashboardPageProps {
   }>;
 }
 
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  slug: string;
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  authorName: string;
+  imageUrl: string | null;
+}
+
+
 export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
   const params = await searchParams;
   const currentPage = Number(params?.page) || 1;
 
-  const { posts, totalCount } = await api.post.allForDashboard({
+  const { posts, totalCount }: { posts: Post[]; totalCount: number } =
+  await api.post.allForDashboard({
     page: currentPage,
     limit: POSTS_PER_PAGE,
   });
