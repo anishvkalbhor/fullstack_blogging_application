@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query'; // 1. Import useQueryClient
+import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertDialog,
   AlertDialogAction,

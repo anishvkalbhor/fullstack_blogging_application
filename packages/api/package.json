@@ -22,7 +22,12 @@
     "react": "*"
   },
   "dependencies": {
+    "@trpc/server": "^11.7.1",
     "@vercel/blob": "^2.0.0",
-    "drizzle-orm": "^0.44.7"
+    "drizzle-orm": "^0.44.7",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }

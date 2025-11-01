@@ -216,6 +216,9 @@ importers:
 
   packages/api:
     dependencies:
+      '@trpc/server':
+        specifier: ^11.7.1
+        version: 11.7.1(typescript@5.9.3)
       '@vercel/blob':
         specifier: ^2.0.0
         version: 2.0.0
@@ -225,6 +228,13 @@ importers:
       react:
         specifier: '*'
         version: 19.2.0
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/db:
     dependencies:
