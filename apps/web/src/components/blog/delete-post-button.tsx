@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query'; // 1. Import useQueryClient
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +14,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/client';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
@@ -23,13 +23,15 @@ interface DeletePostButtonProps {
 
 export function DeletePostButton({ postId }: DeletePostButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const utils = trpc.useUtils();
+  // 2. Get the query client instance instead of tRPC utils
+  const queryClient = useQueryClient();
 
   const deletePost = trpc.post.delete.useMutation({
     onSuccess: () => {
       toast.success('Post deleted successfully.');
-      // Refresh the list of posts on the dashboard
-      utils.post.all.invalidate();
+      // 3. Invalidate the query using the standard TanStack Query method
+      // The query key for a tRPC query is an array with the path.
+      queryClient.invalidateQueries({ queryKey: [['post', 'all']] });
       setIsOpen(false);
     },
     onError: (error) => {
