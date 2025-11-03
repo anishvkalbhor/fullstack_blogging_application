@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 
 import { Type, Tag, Search, LucideIcon } from "lucide-react";
 
+export const revalidate = 60;
+
 type Category = {
   id: number;
   name: string;
