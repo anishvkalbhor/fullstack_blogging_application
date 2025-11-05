@@ -45,7 +45,7 @@ export function PostForm({ categories, initialData }: PostFormProps) {
   const isEditMode = !!initialData;
 
   const form = useForm<PostFormValues>({
-    resolver: zodResolver(createPostSchema),
+    resolver: zodResolver(createPostSchema as any),
     defaultValues: {
       title: initialData?.title ?? '',
       slug: initialData?.slug ?? '',
@@ -151,7 +151,7 @@ export function PostForm({ categories, initialData }: PostFormProps) {
             )}
           />
 
-          {/* --- 6. This is the new Image Uploader Field --- */}
+          {/* --- Image Uploader Field --- */}
           <FormField
             control={form.control}
             name="imageUrl"
@@ -177,10 +177,6 @@ export function PostForm({ categories, initialData }: PostFormProps) {
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  {/* <SimpleEditor
-                    value={field.value ?? ''}
-                    onChange={field.onChange}
-                  /> */}
                   <RichTextEditor 
                     content={field.value ?? ''}
                     onChange={field.onChange}
