@@ -1,21 +1,23 @@
 import { api } from '@/trpc/server-client';
 import { notFound } from 'next/navigation';
-// 1. REMOVE ReactMarkdown
-// import ReactMarkdown from 'react-markdown';
+// 1. REMOVE ReactMarkdown imports
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Metadata, ResolvingMetadata } from 'next';
 import { CalendarDays, User } from 'lucide-react';
 import { PostImage } from '@/components/blog/post-image';
 import { ReadingProgress } from '@/components/blog/reading-progress';
+// 2. We will import a new library
 import parse from 'html-react-parser';
+import RichTextEditor from '@/components/rich-text-editor';
 
 interface PostPageProps {
-  params: Promise<{
+  params: {
     slug: string;
-  }>;
+  };
 }
 
+// --- SEO Metadata ---
 export async function generateMetadata(
   { params: paramsPromise }: PostPageProps,
   parent: ResolvingMetadata,
@@ -35,6 +37,7 @@ export async function generateMetadata(
   }
 }
 
+// --- Main Post Page ---
 export default async function PostPage({ params: paramsPromise }: PostPageProps) {
   const params = await paramsPromise;
   const { slug } = params;
@@ -57,6 +60,7 @@ export default async function PostPage({ params: paramsPromise }: PostPageProps)
     <main className="min-h-screen bg-gradient-to-b from-background via-background to-muted/40">
       <ReadingProgress />
 
+      {/* HERO SECTION */}
       <section className="relative isolate">
         <PostImage
           src={post.imageUrl ?? ''}
@@ -89,6 +93,7 @@ export default async function PostPage({ params: paramsPromise }: PostPageProps)
         </div>
       </section>
 
+      {/* ARTICLE CONTENT */}
       <article className="mx-auto max-w-3xl px-4 sm:px-6 md:px-8 py-16">
         <div className="flex justify-between items-center mb-10">
           <Button asChild variant="outline">
@@ -97,23 +102,8 @@ export default async function PostPage({ params: paramsPromise }: PostPageProps)
             </Link>
           </Button>
         </div>
-         <div
-          className="
-            prose 
-            prose-slate 
-            md:prose-lg 
-            dark:prose-invert 
-            max-w-none 
-            leading-relaxed 
-            break-words 
-            whitespace-pre-wrap 
-            prose-pre:whitespace-pre-wrap 
-            prose-code:break-words
-            prose-img:rounded-lg
-          "
-        >
-          {parse(post.content ?? '')}
-        </div>
+
+        <RichTextEditor content={post.content || ""} editable={false} />
       </article>
 
       {/* GRADIENT DIVIDER + CTA */}
@@ -128,4 +118,3 @@ export default async function PostPage({ params: paramsPromise }: PostPageProps)
     </main>
   );
 }
-

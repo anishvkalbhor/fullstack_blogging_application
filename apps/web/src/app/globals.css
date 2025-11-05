@@ -121,4 +121,115 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* TipTap Editor Styles */
+  .tiptap {
+    @apply focus:outline-none;
+  }
+  
+  .tiptap h1 {
+    @apply text-4xl font-bold mb-4 mt-8 text-foreground;
+  }
+  
+  .tiptap h2 {
+    @apply text-3xl font-bold mb-3 mt-6 text-foreground;
+  }
+  
+  .tiptap h3 {
+    @apply text-2xl font-semibold mb-2 mt-4 text-foreground;
+  }
+  
+  .tiptap p {
+    @apply mb-4 leading-7 text-foreground;
+  }
+  
+  .tiptap strong {
+    @apply font-bold;
+  }
+  
+  .tiptap em {
+    @apply italic;
+  }
+  
+  .tiptap s {
+    @apply line-through;
+  }
+  
+  .tiptap code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+  
+  .tiptap pre {
+    @apply bg-muted p-4 rounded-lg overflow-x-auto my-4;
+  }
+  
+  .tiptap pre code {
+    @apply bg-transparent p-0 text-sm;
+  }
+  
+  .tiptap blockquote {
+    @apply border-l-4 border-primary pl-4 italic my-4 text-muted-foreground;
+  }
+  
+  .tiptap ul {
+    @apply list-disc ml-6 mb-4 space-y-2;
+  }
+  
+  .tiptap ol {
+    @apply list-decimal ml-6 mb-4 space-y-2;
+  }
+  
+  .tiptap li {
+    @apply leading-7;
+  }
+  
+  .tiptap li p {
+    @apply mb-2;
+  }
+  
+  .tiptap hr {
+    @apply my-8 border-border;
+  }
+  
+  .tiptap mark {
+    @apply bg-yellow-200 dark:bg-yellow-800/50 px-1 rounded;
+  }
+  
+  /* Text alignment */
+  .tiptap [style*="text-align: left"] {
+    @apply text-left;
+  }
+  
+  .tiptap [style*="text-align: center"] {
+    @apply text-center;
+  }
+  
+  .tiptap [style*="text-align: right"] {
+    @apply text-right;
+  }
+  
+  /* Video iframe styles - Make it behave like block content */
+  .tiptap div[data-youtube-video] {
+    @apply my-6 clear-both;
+    display: block !important;
+    text-align: inherit !important;
+  }
+  
+  .tiptap iframe {
+    @apply rounded-lg max-w-full;
+    display: inline-block !important;
+    vertical-align: top;
+  }
+  
+  /* Ensure video container takes full width */
+  .tiptap .youtube-video {
+    @apply w-full block;
+  }
+  
+  /* Make YouTube videos responsive */
+  .tiptap div[data-youtube-video] iframe {
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
 }

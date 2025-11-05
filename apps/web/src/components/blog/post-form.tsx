@@ -22,6 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { trpc } from '@/trpc/client';
 import { createPostSchema } from '../../../../../packages/api/src/validation';
 import { ImageUploader } from './image-uploader';
+import RichTextEditor from '@/components/rich-text-editor';
 
 export type PostFormValues = z.infer<typeof createPostSchema>;
 
@@ -176,8 +177,12 @@ export function PostForm({ categories, initialData }: PostFormProps) {
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <SimpleEditor
+                  {/* <SimpleEditor
                     value={field.value ?? ''}
+                    onChange={field.onChange}
+                  /> */}
+                  <RichTextEditor 
+                    content={field.value ?? ''}
                     onChange={field.onChange}
                   />
                 </FormControl>

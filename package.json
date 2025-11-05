@@ -12,5 +12,9 @@
   "packageManager": "pnpm@10.19.0",
   "devDependencies": {
     "@types/node": "^24.9.1"
+  },
+  "dependencies": {
+    "@tiptap/extension-color": "^3.10.2",
+    "@tiptap/extension-text-style": "^3.10.2"
   }
 }
