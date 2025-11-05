@@ -19,9 +19,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { trpc } from '@/trpc/client';
-import { createPostSchema } from 'api/validation';
 import { ImageUploader } from './image-uploader';
 import RichTextEditor from '../rich-text-editor';
+import { createPostSchema } from 'api/validation';
 
 // This type definition will now work
 export type PostFormValues = z.infer<typeof createPostSchema>;
@@ -50,7 +50,7 @@ export function PostForm({ categories, initialData }: PostFormProps) {
       title: initialData?.title ?? '',
       slug: initialData?.slug ?? '',
       content: initialData?.content ?? '',
-      authorName: initialData?.authorName ?? 'Admin',
+      authorName: initialData?.authorName ?? 'User',
       imageUrl: initialData?.imageUrl ?? '',
       categoryIds: initialData?.categoryIds ?? [],
     },

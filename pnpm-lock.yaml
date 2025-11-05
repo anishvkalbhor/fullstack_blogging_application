@@ -14,10 +14,13 @@ importers:
       '@tiptap/extension-text-style':
         specifier: ^3.10.2
         version: 3.10.2(@tiptap/core@3.10.0(@tiptap/pm@3.10.0))
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@types/node':
-        specifier: ^24.9.1
-        version: 24.9.2
+        specifier: ^24.10.0
+        version: 24.10.0
 
   apps/web:
     dependencies:
@@ -272,8 +275,8 @@ importers:
         specifier: '*'
         version: 19.2.0
       zod:
-        specifier: ^4.1.12
-        version: 4.1.12
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       typescript:
         specifier: ^5.9.3
@@ -2347,8 +2350,8 @@ packages:
   '@types/node@20.19.23':
     resolution: {integrity: sha512-yIdlVVVHXpmqRhtyovZAcSy0MiPcYWGkoO4CGe/+jpP0hmNuihm4XhHbADpK++MsiLHP5MVlv+bcgdF99kSiFQ==}
 
-  '@types/node@24.9.2':
-    resolution: {integrity: sha512-uWN8YqxXxqFMX2RqGOrumsKeti4LlmIMIyV0lgut4jx7KQBcBiW6vkDtIBvHnHIquwNfJhk8v2OtmO8zXWHfPA==}
+  '@types/node@24.10.0':
+    resolution: {integrity: sha512-qzQZRBqkFsYyaSWXuEHc2WR9c0a0CXwiE5FWUvn7ZM+vdy1uZLfCunD38UzhuB7YN/J11ndbDBcTmOdxJo9Q7A==}
 
   '@types/offscreencanvas@2019.7.3':
     resolution: {integrity: sha512-ieXiYmgSRXUDeOntE1InxjWyvEelZGP63M+cGuquuRLuIKKT1osnkXjxev9B7d1nXSug5vpunx+gNlbVxMlC9A==}
@@ -6751,9 +6754,6 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.1.12:
-    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
-
   zustand@3.7.2:
     resolution: {integrity: sha512-PIJDIZKtokhof+9+60cpockVOq05sJzHCriyvaLBmEJixseQ1a5Kdov6fWZfWOu5SK9c+FhH1jU0tntLxRJYMA==}
     engines: {node: '>=12.7.0'}
@@ -8795,7 +8795,7 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/node@24.9.2':
+  '@types/node@24.10.0':
     dependencies:
       undici-types: 7.16.0
 
@@ -10192,8 +10192,8 @@ snapshots:
       '@babel/parser': 7.28.5
       eslint: 9.38.0(jiti@1.21.7)
       hermes-parser: 0.25.1
-      zod: 4.1.12
-      zod-validation-error: 4.0.2(zod@4.1.12)
+      zod: 3.25.76
+      zod-validation-error: 4.0.2(zod@3.25.76)
     transitivePeerDependencies:
       - supports-color
 
@@ -13917,13 +13917,11 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  zod-validation-error@4.0.2(zod@4.1.12):
+  zod-validation-error@4.0.2(zod@3.25.76):
     dependencies:
-      zod: 4.1.12
+      zod: 3.25.76
 
   zod@3.25.76: {}
-
-  zod@4.1.12: {}
 
   zustand@3.7.2(react@19.2.0):
     optionalDependencies:
