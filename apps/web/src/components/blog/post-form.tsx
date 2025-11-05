@@ -17,14 +17,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Checkbox } from '@/components/ui/checkbox';
 import { trpc } from '@/trpc/client';
-import { createPostSchema } from '../../../../../packages/api/src/validation';
+import { createPostSchema } from 'api/validation';
 import { ImageUploader } from './image-uploader';
-import RichTextEditor from '@/components/rich-text-editor';
+import RichTextEditor from '../rich-text-editor';
 
-// Remove the intersection and just use z.infer directly
+// This type definition will now work
 export type PostFormValues = z.infer<typeof createPostSchema>;
 
 interface PostFormProps {
@@ -85,15 +84,18 @@ export function PostForm({ categories, initialData }: PostFormProps) {
 
   const isPending = createPost.isPending || updatePost.isPending;
 
+  // Handle form submission
   function onSubmit(values: PostFormValues) {
     if (isPending) return;
     if (isEditMode) {
+      // 3. FIX: Pass the data in the correct structure
       updatePost.mutate({ id: initialData.id, data: values });
     } else {
       createPost.mutate(values);
     }
   }
 
+  // Auto-generate slug from title
   const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
     form.setValue('title', title);
@@ -138,6 +140,7 @@ export function PostForm({ categories, initialData }: PostFormProps) {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="slug"
@@ -170,7 +173,7 @@ export function PostForm({ categories, initialData }: PostFormProps) {
             )}
           />
 
-          {/* --- Content (Rich Text Editor) --- */}
+          {/* 4. FIX: Use 'SimpleEditor' and pass correct props */}
           <FormField
             control={form.control}
             name="content"
@@ -178,7 +181,7 @@ export function PostForm({ categories, initialData }: PostFormProps) {
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <RichTextEditor 
+                  <RichTextEditor
                     content={field.value ?? ''}
                     onChange={field.onChange}
                   />
