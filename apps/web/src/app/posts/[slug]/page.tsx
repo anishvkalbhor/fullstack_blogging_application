@@ -1,29 +1,25 @@
 import { api } from '@/trpc/server-client';
 import { notFound } from 'next/navigation';
-// 1. REMOVE ReactMarkdown imports
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Metadata, ResolvingMetadata } from 'next';
 import { CalendarDays, User } from 'lucide-react';
 import { PostImage } from '@/components/blog/post-image';
 import { ReadingProgress } from '@/components/blog/reading-progress';
-// 2. We will import a new library
-import parse from 'html-react-parser';
 import RichTextEditor from '@/components/rich-text-editor';
 
 interface PostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // --- SEO Metadata ---
 export async function generateMetadata(
-  { params: paramsPromise }: PostPageProps,
+  { params }: PostPageProps,
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
-  const params = await paramsPromise;
-  const { slug } = params;
+  const { slug } = await params;
 
   try {
     const post = await api.post.getBySlug({ slug });
@@ -38,9 +34,8 @@ export async function generateMetadata(
 }
 
 // --- Main Post Page ---
-export default async function PostPage({ params: paramsPromise }: PostPageProps) {
-  const params = await paramsPromise;
-  const { slug } = params;
+export default async function PostPage({ params }: PostPageProps) {
+  const { slug } = await params;
 
   let post;
   try {
@@ -57,7 +52,7 @@ export default async function PostPage({ params: paramsPromise }: PostPageProps)
   });
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background via-background to-muted/40">
+    <main className="min-h-screen bg-linear-to-b from-background via-background to-muted/40">
       <ReadingProgress />
 
       {/* HERO SECTION */}
@@ -67,7 +62,7 @@ export default async function PostPage({ params: paramsPromise }: PostPageProps)
           alt={post.title}
           className="h-[60vh] w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/40 to-transparent" />
 
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-16 text-center text-white px-4">
           <h1 className="max-w-3xl text-4xl md:text-5xl font-bold leading-tight drop-shadow-lg">
