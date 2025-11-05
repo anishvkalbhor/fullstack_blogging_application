@@ -24,7 +24,14 @@ import { createPostSchema } from '../../../../../packages/api/src/validation';
 import { ImageUploader } from './image-uploader';
 import RichTextEditor from '@/components/rich-text-editor';
 
-export type PostFormValues = z.infer<typeof createPostSchema>;
+export type PostFormValues = z.infer<typeof createPostSchema> & {
+  title: string;
+  slug: string;
+  content?: string;
+  authorName: string;
+  imageUrl?: string;
+  categoryIds: number[];
+};
 
 interface PostFormProps {
   categories: { id: number; name: string }[];
