@@ -24,14 +24,8 @@ import { createPostSchema } from '../../../../../packages/api/src/validation';
 import { ImageUploader } from './image-uploader';
 import RichTextEditor from '@/components/rich-text-editor';
 
-export type PostFormValues = z.infer<typeof createPostSchema> & {
-  title: string;
-  slug: string;
-  content?: string;
-  authorName: string;
-  imageUrl?: string;
-  categoryIds: number[];
-};
+// Remove the intersection and just use z.infer directly
+export type PostFormValues = z.infer<typeof createPostSchema>;
 
 interface PostFormProps {
   categories: { id: number; name: string }[];
@@ -52,7 +46,7 @@ export function PostForm({ categories, initialData }: PostFormProps) {
   const isEditMode = !!initialData;
 
   const form = useForm<PostFormValues>({
-    resolver: zodResolver(createPostSchema as any),
+    resolver: zodResolver(createPostSchema),
     defaultValues: {
       title: initialData?.title ?? '',
       slug: initialData?.slug ?? '',
